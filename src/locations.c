@@ -51,6 +51,7 @@ int _convert_error_code(int code,char *func_name)
 			msg = "LOCATIONS_ERROR_NONE";
 			break;
 		case LOCATION_ERROR_NETWORK_FAILED:
+		case LOCATION_ERROR_NETWORK_NOT_CONNECTED:
 			ret = LOCATIONS_ERROR_NETWORK_FAILED;
 			msg = "LOCATIONS_ERROR_NETWORK_FAILED";
 			break;
@@ -171,6 +172,30 @@ void  _remove_boundary(LocationBoundary *boundary, void *user_data)
 /*
 * Public Implementation
 */
+
+bool location_manager_is_supported_method(location_method_e method)
+{
+	LocationMethod _method = LOCATION_METHOD_NONE;
+	switch(method)
+	{
+		case LOCATIONS_METHOD_HYBRID :
+			_method = LOCATION_METHOD_HYBRID;
+			break;
+		case LOCATIONS_METHOD_GPS:
+			_method = LOCATION_METHOD_GPS;
+			break;
+		case LOCATIONS_METHOD_WPS :
+			_method = LOCATION_METHOD_WPS;
+			break;
+		case LOCATIONS_METHOD_SPS :
+			_method = LOCATION_METHOD_SPS;
+			break;
+		default :
+			_method = LOCATION_METHOD_NONE;
+			break;
+		}
+	return location_is_supported_method(_method);
+}
 
 int	location_manager_create(location_method_e method, location_manager_h* manager)
 {
@@ -555,8 +580,49 @@ int	location_manager_get_accuracy(location_manager_h manager, location_accuracy_
 	return LOCATIONS_ERROR_NONE;			
 }
 
-int	location_manager_set_position_updated_cb(location_manager_h manager, location_position_updated_cb callback, void *user_data)
+int location_manager_get_last_known_position(location_manager_h manager, double *altitude, double *latitude, double *longitude, time_t *timestamp)
 {
+	LOCATIONS_NULL_ARG_CHECK(manager);
+	LOCATIONS_NULL_ARG_CHECK(altitude);
+	LOCATIONS_NULL_ARG_CHECK(latitude);
+	LOCATIONS_NULL_ARG_CHECK(longitude);
+	LOCATIONS_NULL_ARG_CHECK(timestamp);
+
+	location_manager_s *handle = (location_manager_s*)manager;
+
+	LocationMethod _method = LOCATION_METHOD_NONE;	
+	g_object_get(handle->object, "method", &_method, NULL);
+	
+	int ret;
+	LocationLastPosition pos;
+	ret = location_get_last_known_position(handle->object, _method, &pos);
+	if (ret == LOCATION_ERROR_UNKNOWN)
+	{
+		*altitude = 0;
+		*latitude = 0;
+		*longitude =0;
+		*timestamp = 0;
+		LOGI("[%s] There is no record of any previous position information. ",__FUNCTION__);
+		return LOCATIONS_ERROR_NONE;
+	}	
+	else if( ret != LOCATION_ERROR_NONE)
+	{
+		return _convert_error_code(ret,(char*)__FUNCTION__);
+	}
+	
+	*altitude = pos.altitude;
+	*latitude = pos.latitude;
+	*longitude = pos.longitude;
+	*timestamp = pos.timestamp;
+	return LOCATIONS_ERROR_NONE;
+}
+
+int	location_manager_set_position_updated_cb(location_manager_h manager, location_position_updated_cb callback, int interval, void *user_data)
+{
+	LOCATIONS_CHECK_CONDITION(interval>=1 && interval<=120, LOCATIONS_ERROR_INVALID_PARAMETER,"LOCATIONS_ERROR_INVALID_PARAMETER");
+	LOCATIONS_NULL_ARG_CHECK(manager);
+	location_manager_s *handle = (location_manager_s*)manager;
+	g_object_set(handle->object, "update-interval", interval, NULL);
 	return _set_callback(_LOCATIONS_EVENT_TYPE_POSITION,manager,callback,user_data);
 }
 

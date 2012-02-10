@@ -50,7 +50,7 @@ typedef enum
  */
 typedef enum
 {
-    LOCATIONS_METHOD_NONE=0,    /**< Undefined method. */
+    LOCATIONS_METHOD_NONE=-1,    /**< Undefined method. */
     LOCATIONS_METHOD_HYBRID,    /**< This method selects the best method available at the moment. */
     LOCATIONS_METHOD_GPS,       /**< This method uses Global Positioning System. */
     LOCATIONS_METHOD_WPS,       /**< This method uses Wifi Positioning System. */
@@ -156,6 +156,16 @@ typedef void(*location_service_state_changed_cb )(location_service_state_e state
  * @see location_manager_set_zone_changed_cb()
  */
 typedef void(*location_zone_changed_cb )(location_boundary_state_e state, double latitude, double longitude, double altitude, time_t timestamp, void *user_data);
+
+/**
+ * @brief Checks whether the given location method is avaliable or not.
+ * @param[in] method The location method to be checked
+ * @return @c true if the specified location method is supported, \n else @c false
+ * @see	location_manager_create()
+ * @see location_manager_get_method()
+ */
+bool location_manager_is_supported_method(location_method_e method);
+
 
 /**
  * @brief Creates a new location manager.
@@ -309,8 +319,8 @@ int location_manager_get_method(location_manager_h manager, location_method_e *m
  * @details
  * The result is current altitude, latitude, and longitude, with a measurement timestamp.
  *
- * If altitude is negative, only altitude and latitude are available (fix status is 2D).
- * If altitude is positive, fix status is 3D and returned altitude value is the result of measurement.
+ * If @a altitude is negative, only altitude and latitude are available (fix status is 2D).
+ * If @a altitude is positive, fix status is 3D and returned altitude value is the result of measurement.
  *
  * @param[in]   manager     The location manager handle
  * @param[out]  altitude    The current altitude (meters)
@@ -361,10 +371,28 @@ int location_manager_get_velocity(location_manager_h manager, int *climb, int *d
 int location_manager_get_accuracy(location_manager_h manager, location_accuracy_level_e *level, double *horizontal, double *vertical);
 
 /**
+ * @brief Gets the last known position information which is recorded.
+ * @details
+ * The @altitude, @latitude, @longitude, and @timestamp values should be 0, if there is no record of any previous position information.
+ * @param[in]   manager     The location manager handle
+ * @param[out]  altitude    The last known altitude (meters)
+ * @param[out]  latitude    The last known latitude [-90.0 ~ 90.0] (degrees)
+ * @param[out]  longitude   The last known longitude [-180.0 ~ 180.0] (degrees)
+ * @param[out]  timestamp   The timestamp (time when measurement took place)
+ * @return 0 on success, otherwise a negative error value.
+ * @retval #LOCATIONS_ERROR_NONE Successful
+ * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
+ * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
+ * @pre The location manager handle must be created by location_manager_create() 
+ */
+int location_manager_get_last_known_position(location_manager_h manager, double *altitude, double *latitude, double *longitude, time_t *timestamp);
+
+/**
  * @brief Registers a callback function to be invoked every 1 second with updated position information.
  *
  * @param[in]   manager     The location manager handle
  * @param[in]   callback    The callback function to register
+ * @param[in]   interval   The interval [1 ~ 120] (seconds)
  * @param[in]   user_data   The user data to be passed to the callback function
  * @return 0 on success, otherwise a negative error value.
  * @retval  #LOCATIONS_ERROR_NONE               Successful
@@ -373,7 +401,7 @@ int location_manager_get_accuracy(location_manager_h manager, location_accuracy_
  * @see location_manager_unset_position_updated_cb()
  * @see location_position_updated_cb()
  */
-int location_manager_set_position_updated_cb(location_manager_h manager, location_position_updated_cb callback, void *user_data);
+int location_manager_set_position_updated_cb(location_manager_h manager, location_position_updated_cb callback,  int interval, void *user_data);
 
 /**
  * @brief	Unregisters the callback function.
