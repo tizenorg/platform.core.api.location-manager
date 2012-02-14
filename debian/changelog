@@ -1,3 +1,9 @@
+capi-location-manager (0.1.0-8) unstable; urgency=low
+
+  * Apply the SOVERSION 
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Tue, 14 Feb 2012 18:24:02 +0900
+
 capi-location-manager (0.1.0-7) unstable; urgency=low
 
   * Support to  location_manager_get_last_known_position(), location_manager_is_supported_method(), and interval setting.
