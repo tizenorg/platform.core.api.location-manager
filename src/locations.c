@@ -40,7 +40,7 @@
 * Internal Implementation
 */
 
-int _convert_error_code(int code,char *func_name)
+static int __convert_error_code(int code,char *func_name)
 {
 	int ret;
 	char* msg = "LOCATIONS_ERROR_NONE";
@@ -71,7 +71,7 @@ int _convert_error_code(int code,char *func_name)
 	return ret;	
 }
 
-void cb_service_updated (GObject *self,  guint type, gpointer data, gpointer accuracy, gpointer userdata)
+static void __cb_service_updated (GObject *self,  guint type, gpointer data, gpointer accuracy, gpointer userdata)
 {
 	LOGI("[%s] Callback function has been invoked. ",__FUNCTION__);
 	location_manager_s * handle = (location_manager_s*)userdata;
@@ -89,7 +89,7 @@ void cb_service_updated (GObject *self,  guint type, gpointer data, gpointer acc
 	}
 }
 
-void cb_service_enabled (GObject *self, guint status, gpointer userdata)
+static void __cb_service_enabled (GObject *self, guint status, gpointer userdata)
 {
 	LOGI("[%s] Callback function has been invoked. ",__FUNCTION__);
 	location_manager_s * handle = (location_manager_s*)userdata;
@@ -99,7 +99,7 @@ void cb_service_enabled (GObject *self, guint status, gpointer userdata)
 	}
 }
 
-void cb_service_disabled (GObject *self, guint status, gpointer userdata)
+static void __cb_service_disabled (GObject *self, guint status, gpointer userdata)
 {
 	LOGI("[%s] Callback function has been invoked. ",__FUNCTION__);
 	location_manager_s * handle = (location_manager_s*)userdata;
@@ -107,7 +107,7 @@ void cb_service_disabled (GObject *self, guint status, gpointer userdata)
 		((location_service_state_changed_cb)handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_DISABLED,handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
 }
 
-void cb_zone_in (GObject *self, guint type, gpointer position, gpointer accuracy, gpointer userdata)
+static void __cb_zone_in (GObject *self, guint type, gpointer position, gpointer accuracy, gpointer userdata)
 {
 	location_manager_s * handle = (location_manager_s*)userdata;
 	if( handle->user_cb[_LOCATIONS_EVENT_TYPE_BOUNDARY] )
@@ -117,7 +117,7 @@ void cb_zone_in (GObject *self, guint type, gpointer position, gpointer accuracy
 	}
 }
 
-void cb_zone_out (GObject *self, guint type, gpointer position, gpointer accuracy, gpointer userdata)
+static void __cb_zone_out (GObject *self, guint type, gpointer position, gpointer accuracy, gpointer userdata)
 {
 	location_manager_s * handle = (location_manager_s*)userdata;
 	if( handle->user_cb[_LOCATIONS_EVENT_TYPE_BOUNDARY] )
@@ -127,7 +127,7 @@ void cb_zone_out (GObject *self, guint type, gpointer position, gpointer accurac
 	}
 }
 
-int _set_callback(_location_event_e type, location_manager_h manager, void* callback, void *user_data)
+static int __set_callback(_location_event_e type, location_manager_h manager, void* callback, void *user_data)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(callback);
@@ -138,7 +138,7 @@ int _set_callback(_location_event_e type, location_manager_h manager, void* call
 	return LOCATIONS_ERROR_NONE; 
 }
 
-int _unset_callback(_location_event_e type, location_manager_h manager)
+static int __unset_callback(_location_event_e type, location_manager_h manager)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s * handle = (location_manager_s *) manager; 
@@ -148,7 +148,7 @@ int _unset_callback(_location_event_e type, location_manager_h manager)
 	return LOCATIONS_ERROR_NONE; 
 }
 
-void  _remove_boundary(LocationBoundary *boundary, void *user_data)
+static void  __remove_boundary(LocationBoundary *boundary, void *user_data)
 {
 	LocationObject* loc = (LocationObject*) user_data;
 	if (loc != NULL && boundary != NULL) 
@@ -263,7 +263,7 @@ int	location_manager_destroy(location_manager_h manager)
 	int ret = location_free(handle->object);
 	if(ret!=LOCATIONS_ERROR_NONE)
 	{
-		return _convert_error_code(ret,(char*)__FUNCTION__);
+		return __convert_error_code(ret,(char*)__FUNCTION__);
 	}
 	free(handle);
 	return LOCATIONS_ERROR_NONE;
@@ -274,16 +274,16 @@ int	location_manager_start(location_manager_h manager)
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s*)manager;
 		
-	g_signal_connect (handle->object, "service-enabled", G_CALLBACK(cb_service_enabled), handle);
-	g_signal_connect (handle->object, "service-disabled", G_CALLBACK(cb_service_disabled), handle);
-	g_signal_connect (handle->object, "service-updated", G_CALLBACK(cb_service_updated), handle);
-	g_signal_connect (handle->object, "zone-in", G_CALLBACK(cb_zone_in), handle);
-	g_signal_connect (handle->object, "zone-out", G_CALLBACK(cb_zone_out), handle);
+	g_signal_connect (handle->object, "service-enabled", G_CALLBACK(__cb_service_enabled), handle);
+	g_signal_connect (handle->object, "service-disabled", G_CALLBACK(__cb_service_disabled), handle);
+	g_signal_connect (handle->object, "service-updated", G_CALLBACK(__cb_service_updated), handle);
+	g_signal_connect (handle->object, "zone-in", G_CALLBACK(__cb_zone_in), handle);
+	g_signal_connect (handle->object, "zone-out", G_CALLBACK(__cb_zone_out), handle);
 	
 	int ret = location_start (handle->object);
 	if( ret != LOCATION_ERROR_NONE)
 	{
-		return _convert_error_code(ret,(char*)__FUNCTION__);
+		return __convert_error_code(ret,(char*)__FUNCTION__);
 	}
 	return LOCATIONS_ERROR_NONE;
 }
@@ -296,7 +296,7 @@ int	location_manager_stop(location_manager_h manager)
 	int ret = location_stop (handle->object);
 	if( ret != LOCATION_ERROR_NONE)
 	{
-		return _convert_error_code(ret,(char*)__FUNCTION__);
+		return __convert_error_code(ret,(char*)__FUNCTION__);
 	}
 	return LOCATIONS_ERROR_NONE;
 }
@@ -312,7 +312,7 @@ int	location_manager_set_boundary_rect(location_manager_h manager, double top_le
 	location_manager_s *handle = (location_manager_s*)manager;
 
 	int ret;
-	ret = location_boundary_foreach(handle->object, _remove_boundary,handle->object );
+	ret = location_boundary_foreach(handle->object, __remove_boundary,handle->object );
 	if(ret != LOCATION_ERROR_NONE)
 	{
 		LOGI("[%s] Failed to foreach boundary : 0x%x. ",__FUNCTION__, ret);
@@ -349,7 +349,7 @@ int	location_manager_set_boundary_rect(location_manager_h manager, double top_le
 		location_boundary_free(bound);
 		if( ret != LOCATION_ERROR_NONE)
 		{
-			return _convert_error_code(ret,(char*)__FUNCTION__);
+			return __convert_error_code(ret,(char*)__FUNCTION__);
 		}
 	}
 	else
@@ -371,7 +371,7 @@ int	location_manager_set_boundary_circle(location_manager_h manager, double cent
 	location_manager_s *handle = (location_manager_s*)manager;	
 
 	int ret;
-	ret = location_boundary_foreach(handle->object, _remove_boundary, handle->object);
+	ret = location_boundary_foreach(handle->object, __remove_boundary, handle->object);
 	if(ret != LOCATION_ERROR_NONE)
 	{
 		LOGI("[%s] Failed to foreach boundary : 0x%x. ",__FUNCTION__, ret);
@@ -399,7 +399,7 @@ int	location_manager_set_boundary_circle(location_manager_h manager, double cent
 		location_boundary_free(bound);
 		if( ret != LOCATION_ERROR_NONE)
 		{
-			return _convert_error_code(ret,(char*)__FUNCTION__);
+			return __convert_error_code(ret,(char*)__FUNCTION__);
 		}
 	}
 	else
@@ -500,7 +500,7 @@ int	location_manager_get_position(location_manager_h manager, double *altitude, 
 	ret = location_get_position(handle->object, &pos, &acc);
 	if( ret != LOCATION_ERROR_NONE)
 	{
-		return _convert_error_code(ret,(char*)__FUNCTION__);
+		return __convert_error_code(ret,(char*)__FUNCTION__);
 	}
 
 	if(pos->status == LOCATION_STATUS_NO_FIX)
@@ -543,7 +543,7 @@ int	location_manager_get_velocity(location_manager_h manager, int *climb, int *d
 	ret = location_get_velocity(handle->object, &vel, &acc);
 	if( ret != LOCATION_ERROR_NONE)
 	{
-		return _convert_error_code(ret,(char*)__FUNCTION__);
+		return __convert_error_code(ret,(char*)__FUNCTION__);
 	}
 
 	*climb = vel->climb;
@@ -569,7 +569,7 @@ int	location_manager_get_accuracy(location_manager_h manager, location_accuracy_
 	ret = location_get_position(handle->object, &pos, &acc);
 	if( ret != LOCATION_ERROR_NONE)
 	{
-		return _convert_error_code(ret,(char*)__FUNCTION__);
+		return __convert_error_code(ret,(char*)__FUNCTION__);
 	}
 	
 	*level = acc->level;
@@ -594,8 +594,9 @@ int location_manager_get_last_known_position(location_manager_h manager, double 
 	g_object_get(handle->object, "method", &_method, NULL);
 	
 	int ret;
-	LocationLastPosition pos;
-	ret = location_get_last_known_position(handle->object, _method, &pos);
+	LocationPosition *pos = NULL;
+	LocationAccuracy *acc = NULL;
+	ret = location_get_last_position(handle->object, _method, &pos,&acc);
 	if (ret == LOCATION_ERROR_UNKNOWN)
 	{
 		*altitude = 0;
@@ -607,13 +608,15 @@ int location_manager_get_last_known_position(location_manager_h manager, double 
 	}	
 	else if( ret != LOCATION_ERROR_NONE)
 	{
-		return _convert_error_code(ret,(char*)__FUNCTION__);
+		return __convert_error_code(ret,(char*)__FUNCTION__);
 	}
 	
-	*altitude = pos.altitude;
-	*latitude = pos.latitude;
-	*longitude = pos.longitude;
-	*timestamp = pos.timestamp;
+	*altitude = pos->altitude;
+	*latitude = pos->latitude;
+	*longitude = pos->longitude;
+	*timestamp = pos->timestamp;
+	location_position_free(pos);
+	location_accuracy_free(acc);
 	return LOCATIONS_ERROR_NONE;
 }
 
@@ -623,42 +626,42 @@ int	location_manager_set_position_updated_cb(location_manager_h manager, locatio
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s*)manager;
 	g_object_set(handle->object, "update-interval", interval, NULL);
-	return _set_callback(_LOCATIONS_EVENT_TYPE_POSITION,manager,callback,user_data);
+	return __set_callback(_LOCATIONS_EVENT_TYPE_POSITION,manager,callback,user_data);
 }
 
 int	location_manager_unset_position_updated_cb(location_manager_h manager)
 {
-	return _unset_callback(_LOCATIONS_EVENT_TYPE_POSITION,manager);
+	return __unset_callback(_LOCATIONS_EVENT_TYPE_POSITION,manager);
 }
 
 int	location_manager_set_velocity_updated_cb(location_manager_h manager, location_velocity_updated_cb callback, void *user_data)
 {
-	return _set_callback(_LOCATIONS_EVENT_TYPE_VELOCITY,manager,callback,user_data);
+	return __set_callback(_LOCATIONS_EVENT_TYPE_VELOCITY,manager,callback,user_data);
 }
 
 int	location_manager_unset_velocity_updated_cb(location_manager_h manager)
 {
-	return _unset_callback(_LOCATIONS_EVENT_TYPE_VELOCITY,manager);
+	return __unset_callback(_LOCATIONS_EVENT_TYPE_VELOCITY,manager);
 }
 
 int	location_manager_set_service_state_changed_cb(location_manager_h manager, location_service_state_changed_cb callback, void *user_data)
 {
-	return _set_callback(_LOCATIONS_EVENT_TYPE_SERVICE_STATE,manager,callback,user_data);
+	return __set_callback(_LOCATIONS_EVENT_TYPE_SERVICE_STATE,manager,callback,user_data);
 }
 
 int	location_manager_unset_service_state_changed_cb(location_manager_h manager)
 {
-	return _unset_callback(_LOCATIONS_EVENT_TYPE_SERVICE_STATE,manager);
+	return __unset_callback(_LOCATIONS_EVENT_TYPE_SERVICE_STATE,manager);
 }
 
 int	location_manager_set_zone_changed_cb(location_manager_h manager, location_zone_changed_cb callback, void *user_data)
 {
-	return _set_callback(_LOCATIONS_EVENT_TYPE_BOUNDARY,manager,callback,user_data);
+	return __set_callback(_LOCATIONS_EVENT_TYPE_BOUNDARY,manager,callback,user_data);
 }
 
 int	location_manager_unset_zone_changed_cb(location_manager_h manager)
 {
-	return _unset_callback(_LOCATIONS_EVENT_TYPE_BOUNDARY,manager);
+	return __unset_callback(_LOCATIONS_EVENT_TYPE_BOUNDARY,manager);
 }
 
 /////////////////////////////////////////
