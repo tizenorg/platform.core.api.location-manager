@@ -19,6 +19,7 @@
 
 #include <location/location.h>
 #include <locations.h>
+#include <location_bounds.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,6 +30,7 @@ typedef enum {
 	_LOCATIONS_EVENT_TYPE_POSITION,
 	_LOCATIONS_EVENT_TYPE_VELOCITY,
 	_LOCATIONS_EVENT_TYPE_BOUNDARY,
+	_LOCATIONS_EVENT_TYPE_FOREACH_BOUNDS,
 	_LOCATIONS_EVENT_TYPE_NUM
 }_location_event_e;
 
@@ -37,7 +39,7 @@ typedef struct _location_manager_s{
 	const void* user_cb[_LOCATIONS_EVENT_TYPE_NUM];
 	void* user_data[_LOCATIONS_EVENT_TYPE_NUM];
 	location_method_e method;
-	LocationBoundary* boundary;
+	bool is_continue_foreach_bounds;
 } location_manager_s;
 
 #ifdef __cplusplus

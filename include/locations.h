@@ -11,7 +11,7 @@
 * distributed under the License is distributed on an "AS IS" BASIS,
 * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 * See the License for the specific language governing permissions and
-* limitations under the License. 
+* limitations under the License.
 */
 
 #ifndef __TIZEN_LOCATION_LOCATIONS_H__
@@ -19,6 +19,7 @@
 
 #include <tizen_type.h>
 #include <tizen_error.h>
+#include <location_bounds.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -115,7 +116,7 @@ typedef enum
  * @see location_manager_start()
  * @see location_manager_set_position_updated_cb()
  */
-typedef void(*location_position_updated_cb )(double latitude, double longitude, double altitude, time_t timestamp, void *user_data);
+typedef void(*location_position_updated_cb)(double latitude, double longitude, double altitude, time_t timestamp, void *user_data);
 
 /**
  * @brief Called every 1 second with updated velocity information.
@@ -128,7 +129,7 @@ typedef void(*location_position_updated_cb )(double latitude, double longitude, 
  * @see location_manager_start()
  * @see location_manager_set_velocity_updated_cb()
  */
-typedef void(*location_velocity_updated_cb )(double speed, double direction, double climb, time_t timestamp, void *user_data);
+typedef void(*location_velocity_updated_cb)(double speed, double direction, double climb, time_t timestamp, void *user_data);
 
 /**
  * @brief Called when the state of location service is changed from enabled to disabled or vice versa.
@@ -140,7 +141,7 @@ typedef void(*location_velocity_updated_cb )(double speed, double direction, dou
  * @see location_manager_set_service_state_changed_cb()
  * @see #location_service_state_e
  */
-typedef void(*location_service_state_changed_cb )(location_service_state_e state, void *user_data);
+typedef void(*location_service_state_changed_cb)(location_service_state_e state, void *user_data);
 
 /**
  * @brief Called when the user defined zones are entered or exited.
@@ -155,7 +156,16 @@ typedef void(*location_service_state_changed_cb )(location_service_state_e state
  * @see location_manager_start()
  * @see location_manager_set_zone_changed_cb()
  */
-typedef void(*location_zone_changed_cb )(location_boundary_state_e state, double latitude, double longitude, double altitude, time_t timestamp, void *user_data);
+typedef void(*location_zone_changed_cb)(location_boundary_state_e state, double latitude, double longitude, double altitude, time_t timestamp, void *user_data);
+
+/**
+ * @brief Gets called iteratively to notify you of location bounds.
+ * @param[in] bounds  The location bounds handle
+ * @param[in] user_data  The user data passed from the callback registration function
+ * @pre location_manager_foreach_boundary() will invoke this callback.
+ * @see location_manager_foreach_boundary()
+ */
+typedef bool(*location_bounds_cb)(location_bounds_h bounds, void *user_data);
 
 /**
  * @brief Checks whether the given location method is avaliable or not.
@@ -192,18 +202,18 @@ int location_manager_create(location_method_e method, location_manager_h* manage
 int location_manager_destroy(location_manager_h manager);
 
 /**
- * @brief Starts the location service. 
+ * @brief Starts the location service.
  *
  * @remarks There is no limit on number of location managers for which this function was called.
  *
- * Calling this function invokes a location service event. When the location service is enabled, the service state change callback 
- * (set using #location_manager_set_service_state_changed_cb()) notifies the user with #LOCATIONS_SERVICE_ENABLED as 
+ * Calling this function invokes a location service event. When the location service is enabled, the service state change callback
+ * (set using #location_manager_set_service_state_changed_cb()) notifies the user with #LOCATIONS_SERVICE_ENABLED as
  * the first argument, and the service starts. \n
 
  * Started service is a requirement for calling these functions:
  *
  * location_manager_get_position(), location_manager_get_velocity(), location_manager_get_accuracy(),
- * #gps_status_get_nmea(), gps_status_get_satellite_count_in_view(), gps_status_foreach_satellites_in_view(), gps_status_get_active_satellite_count().
+ * gps_status_get_nmea(), gps_status_get_satellite_count_in_view(), gps_status_foreach_satellites_in_view(), gps_status_get_active_satellite_count().
  *
  * Once you stop the service, using #location_manager_stop(), you can no longer call the functions listed above.
  *
@@ -253,54 +263,46 @@ int location_manager_start(location_manager_h manager);
 int location_manager_stop(location_manager_h manager);
 
 /**
- * @brief Sets a rectangular boundary for a given location manager.
- * @param[in]   manager                 The location manager handle
- * @param[in]   top_left_latitude       The latitude of area's top left corner [-90.0 ~ 90.0] (degrees)
- * @param[in]   top_left_longitude      The longitude of area's top left corner [-180.0 ~ 180.0] (degrees)
- * @param[in]   bottom_right_latitude   The latitude of area's bottom right corner [-90.0 ~ 90.0] (degrees)
- * @param[in]   bottom_right_longitude  The longitude of area's bottom right corner [-180.0 ~ 180.0] (degrees)
+ * @brief Adds a bounds for a given location manager.
+ * @param[in] manager The location manager handle
+ * @param[in] bounds The location bounds handle
  * @return 0 on success, otherwise a negative error value.
  * @retval #LOCATIONS_ERROR_NONE Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval #LOCATIONS_ERROR_OUT_OF_MEMORY Out of memory
  * @post It invokes location_manager_set_zone_changed_cb() when a boundary is entered or exited, if you set a callback with location_manager_set_zone_changed_cb().
- * @see location_manager_set_boundary_circle()
+ * @see location_manager_remove_boundary()
  * @see location_manager_set_zone_changed_cb()
  * @see location_manager_is_boundary_contains_coordinate()
  */
-int location_manager_set_boundary_rect(location_manager_h manager, double top_left_latitude, double top_left_longitude, double bottom_right_latitude, double bottom_right_longitude);
+int location_manager_add_boundary(location_manager_h manager, const location_bounds_h bounds);
 
 /**
- * @brief Sets a circular boundary for a given location manager.
- * @param[in]   manager             The location manager handle
- * @param[in]   center_latitude     The latitude of circle's center [-90.0 ~ 90.0] (degrees)
- * @param[in]   center_longitude    The longitude of circle's center [-180.0 ~ 180.0] (degrees)
- * @param[in]   radius              The radius of a circle (meters)
+ * @brief Deletes a bounds for a given location manager.
+ * @param[in] manager The location manager handle
+ * @param[in] bounds The location bounds handle
  * @return 0 on success, otherwise a negative error value.
  * @retval #LOCATIONS_ERROR_NONE Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid parameter
  * @retval #LOCATIONS_ERROR_OUT_OF_MEMORY Out of memory
- * @post It invokes location_manager_set_zone_changed_cb() when a boundary is entered or exited, if you set a callback with location_manager_set_zone_changed_cb().
- * @see location_manager_set_boundary_rect()
- * @see location_manager_set_zone_changed_cb()
- * @see location_manager_is_boundary_contains_coordinate()
+ * @see location_manager_add_boundary()
  */
-int location_manager_set_boundary_circle(location_manager_h manager, double center_latitude, double center_longitude, double radius);
+int location_manager_remove_boundary(location_manager_h manager, const location_bounds_h bounds);
 
 /**
- * @brief Check if the boundary contains the specified latitude and longitude.
- * @param[in]   manager  The location manager handle
- * @param[in]   latitude    The latitude to test against boundary [-90.0 ~ 90.0] (degrees)
- * @param[in]   longitude  The longitude to test against boundary [-180.0 ~ 180.0] (degrees)
- * @param[out]   contained  The result indicating whether the boundary contains the specified coordinate (@c true = contained, @c false = not contained )
- * @return 0 on success, otherwise a negative error value.
+ * @brief  Retrieves all location bounds by invoking a specific callback for each locatoin bounds
+ * @param[in] manager  The location manager handle
+ * @param[in] callback The iteration callback
+ * @param[in] user_data	The user data to be passed to the callback function
+ * @return	0 on success, otherwise a negative error value.
  * @retval #LOCATIONS_ERROR_NONE Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid parameter
- * @retval #LOCATIONS_ERROR_OUT_OF_MEMORY Out of memory
- * @see location_manager_set_boundary_rect()
- * @see location_manager_set_boundary_circle()
+ * @post  location_bounds_cb() will be invoked
+ * @see location_manager_add_boundary()
+ * @see location_manager_remove_boundary()
+ * @see location_bounds_cb()
  */
-int location_manager_is_boundary_contains_coordinate(location_manager_h manager, double latitude, double longitude, bool *contained);
+int location_manager_foreach_boundary(location_manager_h manager,  location_bounds_cb callback, void *user_data);
 
 /**
  * @brief Gets the given location manager's method.
@@ -332,7 +334,7 @@ int location_manager_get_method(location_manager_h manager, location_method_e *m
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
  * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE Service not available
  * @retval #LOCATIONS_ERROR_GPS_SETTING_OFF GPS is not enabled
- * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start() 
+ * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start()
  */
 int location_manager_get_position(location_manager_h manager, double *altitude, double *latitude, double *longitude, time_t *timestamp);
 
@@ -351,7 +353,7 @@ int location_manager_get_position(location_manager_h manager, double *altitude, 
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
  * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE Service not available
  * @retval #LOCATIONS_ERROR_GPS_SETTING_OFF GPS is not enabled
- * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start() 
+ * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start()
  */
 int location_manager_get_velocity(location_manager_h manager, int *climb, int *direction, int *speed, time_t *timestamp);
 
@@ -366,26 +368,56 @@ int location_manager_get_velocity(location_manager_h manager, int *climb, int *d
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
  * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE Service not available
  * @retval #LOCATIONS_ERROR_GPS_SETTING_OFF GPS is not enabled
- * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start() 
+ * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start()
  */
 int location_manager_get_accuracy(location_manager_h manager, location_accuracy_level_e *level, double *horizontal, double *vertical);
 
 /**
- * @brief Gets the last known position information which is recorded.
- * @details
- * The @altitude, @latitude, @longitude, and @timestamp values should be 0, if there is no record of any previous position information.
+ * @brief Gets the last position information which is recorded.
+ * @details The @a altitude, @a latitude, @a longitude, and @c timestamp values should be 0, if there is no record of any previous position information.
+ * @details If @a altitude is negative, only altitude and latitude are available (fix status is 2D).
+ * @details If @a altitude is positive, fix status is 3D and returned altitude value is the result of measurement.
  * @param[in]   manager     The location manager handle
- * @param[out]  altitude    The last known altitude (meters)
- * @param[out]  latitude    The last known latitude [-90.0 ~ 90.0] (degrees)
- * @param[out]  longitude   The last known longitude [-180.0 ~ 180.0] (degrees)
+ * @param[out]  altitude    The last altitude (meters)
+ * @param[out]  latitude    The last latitude [-90.0 ~ 90.0] (degrees)
+ * @param[out]  longitude   The last longitude [-180.0 ~ 180.0] (degrees)
  * @param[out]  timestamp   The timestamp (time when measurement took place)
  * @return 0 on success, otherwise a negative error value.
  * @retval #LOCATIONS_ERROR_NONE Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
- * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
- * @pre The location manager handle must be created by location_manager_create() 
+ * @pre The location manager handle must be created by location_manager_create()
  */
-int location_manager_get_last_known_position(location_manager_h manager, double *altitude, double *latitude, double *longitude, time_t *timestamp);
+int location_manager_get_last_position(location_manager_h manager, double *altitude, double *latitude, double *longitude, time_t *timestamp);
+
+/**
+ * @brief Gets the last velocity information which is recorded.
+ * @details
+ * The @a climb, @a direction and @a speed values should be 0, if there is no record of any previous velocity information.
+ *
+ * @param[in]   manager     The location manager handle
+ * @param[out]  climb       The last climb (km/h)
+ * @param[out]  direction   The last direction, degrees from the north
+ * @param[out]  speed       The last speed (km/h)
+ * @param[out]  timestamp   The timestamp (time when measurement took place)
+ * @return 0 on success, otherwise a negative error value.
+ * @retval #LOCATIONS_ERROR_NONE Successful
+ * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
+ * @pre The location manager handle must be created by location_manager_create()
+ */
+int location_manager_get_last_velocity(location_manager_h manager, int *climb, int *direction, int *speed, time_t *timestamp);
+
+/**
+ * @brief Gets the last accuracy information which is recorded.
+ * @param[in]   manager 	The location manager handle
+ * @param[out]  level		The last accuracy level
+ * @param[out]  horizontal	The last horizontal accuracy (meters)
+ * @param[out]  vertical	The last vertical accuracy (meters)
+ * @return 0 on success, otherwise a negative error value.
+ * @retval #LOCATIONS_ERROR_NONE Successful
+ * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
+ * @pre The location manager handle must be created by location_manager_create()
+ */
+int location_manager_get_last_accuracy(location_manager_h manager, location_accuracy_level_e *level, double *horizontal, double *vertical);
 
 /**
  * @brief Registers a callback function to be invoked every 1 second with updated position information.
@@ -493,6 +525,16 @@ int location_manager_set_zone_changed_cb(location_manager_h manager, location_zo
  * @see location_manager_set_zone_changed_cb()
  */
 int location_manager_unset_zone_changed_cb(location_manager_h manager);
+
+/**
+ * @brief	Sends command to the server.
+ * @param[in]	cmd The command string to be sent
+ * @return 0 on success, otherwise a negative error value.
+ * @retval  #LOCATIONS_ERROR_NONE	Successful
+ * @retval  #LOCATIONS_ERROR_INVALID_PARAMETER  Invalid parameter
+ */
+int location_manager_send_command(const char *cmd);
+
 /**
  * @}
  */
@@ -516,17 +558,15 @@ int location_manager_unset_zone_changed_cb(location_manager_h manager);
  * @param[in] user_data  The user data passed from the foreach function
  * @return @c true to continue with the next iteration of the loop, \n @c false to break out of the loop
  * @pre gps_status_foreach_satellites_in_view() will invoke this callback.
+ * @pre gps_status_foreach_last_satellites_in_view() will invoke this callback.
  * @see gps_status_foreach_satellites_in_view()
  */
 typedef bool(*gps_status_get_satellites_cb)(unsigned int azimuth, unsigned int elevation, unsigned int prn, int snr, bool is_active, void *user_data);
 
 /**
  * @brief Gets the GPS NMEA data.
- *
- * @remarks
- * This call is valid only for location managers with #LOCATIONS_METHOD_GPS method.\n
+ * @remarks This call is valid only for location managers with #LOCATIONS_METHOD_GPS method.\n
  * @a nmea must be released with @c free() by you.
- *
  * @param[in]	manager The location manager handle
  * @param[out]	nmea	The NMEA data
  * @return 0 on success, otherwise a negative error value.
@@ -535,35 +575,31 @@ typedef bool(*gps_status_get_satellites_cb)(unsigned int azimuth, unsigned int e
  * @retval #LOCATIONS_ERROR_INCORRECT_METHOD Incorrect method
  * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE Service not available
  * @retval #LOCATIONS_ERROR_OUT_OF_MEMORY Out of memory
- * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start() 
+ * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start()
  * @see location_manager_start()
  */
 int gps_status_get_nmea(location_manager_h manager, char **nmea);
 
 /**
- * @brief Gets the number of satellites in view.
- *
- * @remarks
- * This call is valid only for location managers with #LOCATIONS_METHOD_GPS method.
- *
+ * @brief Gets the information of satellites.
+ * @remarks This call is valid only for location managers with #LOCATIONS_METHOD_GPS method.
  * @param[in]   manager The location manager handle
- * @param[out]  count   The number of satellites in view
+ * @param[out]  num_of_active   The number of active satellites
+ * @param[out]  num_of_inview   The number of satellites in view
+ * @param[out]  timestamp   The timestamp (time when measurement took place)
  * @return 0 on success, otherwise a negative error value.
  * @retval #LOCATIONS_ERROR_NONE Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
  * @retval #LOCATIONS_ERROR_INCORRECT_METHOD Incorrect method
  * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE Service not available
- * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start() 
+ * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start()
  * @see   gps_status_foreach_satellites_in_view()
  */
-int  gps_status_get_satellite_count_in_view(location_manager_h manager, int *count);
+int  gps_status_get_satellite(location_manager_h manager, int *num_of_active, int *num_of_inview, time_t *timestamp);
 
 /**
  * @brief Invokes the callback function for each satellite.
- *
- * @remarks
- * This function is valid only for location managers with the #LOCATIONS_METHOD_GPS method.
- *
+ * @remarks This function is valid only for location managers with the #LOCATIONS_METHOD_GPS method.
  * @param[in]   manager     The location manager handle
  * @param[in]   callback    The iteration callback function
  * @param[in]   user_data   The user data to be passed to the callback function
@@ -572,30 +608,48 @@ int  gps_status_get_satellite_count_in_view(location_manager_h manager, int *cou
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
  * @retval #LOCATIONS_ERROR_INCORRECT_METHOD Incorrect method
  * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE Service not available
- * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start() 
+ * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start()
  * @post  It invokes gps_status_get_satellites_cb().
- * @see   gps_status_get_satellite_count_in_view()
+ * @see   gps_status_get_satellite()
  * @see   gps_status_get_satellites_cb()
  */
 int  gps_status_foreach_satellites_in_view (location_manager_h manager, gps_status_get_satellites_cb callback, void *user_data);
 
 /**
- * @brief Gets the number of satellites available to be used.
- *
- * @remarks
- * This call is valid only for location managers with #LOCATIONS_METHOD_GPS method.
- *
+ * @brief Gets the last information of satellites.
+ * @remarks This call is valid only for location managers with #LOCATIONS_METHOD_GPS method.
  * @param[in]   manager The location manager handle
- * @param[out]  count   The number of active satellites
+ * @param[out]  num_of_active   The last number of active satellites
+ * @param[out]  num_of_inview   The last number of satellites in view
+ * @param[out]  timestamp   The last timestamp (time when last measurement took place)
  * @return 0 on success, otherwise a negative error value.
  * @retval #LOCATIONS_ERROR_NONE Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
  * @retval #LOCATIONS_ERROR_INCORRECT_METHOD Incorrect method
  * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE Service not available
- * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start() 
- * @see   gps_status_get_satellite_count_in_view()
+ * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start()
+ * @see   gps_status_foreach_satellites_in_view()
  */
-int  gps_status_get_active_satellite_count(location_manager_h manager, int *count);
+int gps_status_get_last_satellite(location_manager_h manager, int *num_of_active, int *num_of_inview, time_t *timestamp);
+
+/**
+ * @brief Invokes the callback function for each last satellite which is recorded.
+ * @remarks  This function is valid only for location managers with the #LOCATIONS_METHOD_GPS method.
+ * @param[in]   manager     The location manager handle
+ * @param[in]   callback    The iteration callback function
+ * @param[in]   user_data   The user data to be passed to the callback function
+ * @return 0 on success, otherwise a negative error value.
+ * @retval #LOCATIONS_ERROR_NONE Successful
+ * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
+ * @retval #LOCATIONS_ERROR_INCORRECT_METHOD Incorrect method
+ * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE Service not available
+ * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start()
+ * @post  It invokes gps_status_get_satellites_cb().
+ * @see   gps_status_get_last_satellite()
+ * @see   gps_status_get_satellites_cb()
+ */
+int gps_status_foreach_last_satellites_in_view(location_manager_h manager, gps_status_get_satellites_cb callback, void *user_data);
+
 /**
  * @}
  */
