@@ -16,7 +16,7 @@
 
 #include <location_preference.h>
 #include <dlog.h>
-#include <location.h>
+#include <location-map-service.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -38,7 +38,7 @@
 #define LOCATION_PREFERENCE_PRINT_ERROR_CODE(error, msg)  \
     LOGE("[%s] %s(0x%08x)",__FUNCTION__, msg, error); return error;
 
-#define LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service) *((LocationObject**)service)
+#define LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service) *((LocationMapObject**)service)
 
 
 /*
@@ -77,7 +77,7 @@ static int __convert_error_code(int code, char* func_name)
 */
 int location_preference_foreach_available_property_keys(location_service_h service, location_preference_available_property_key_cb callback, void* user_data)
 {
-    LocationObject* object = NULL;
+    LocationMapObject* object = NULL;
     GList* keys = NULL;
     char* key = NULL;
     int ret = 0;
@@ -86,7 +86,7 @@ int location_preference_foreach_available_property_keys(location_service_h servi
     LOCATION_PREFERENCE_NULL_ARG_CHECK(callback);
 
     object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
-    ret = location_get_map_provider_capability_key(object, MAP_SERVICE_PREF_PROPERTY, &keys);
+    ret = location_map_get_provider_capability_key(object, MAP_SERVICE_PREF_PROPERTY, &keys);
     if(ret != LOCATION_ERROR_NONE)
     {
         return __convert_error_code(ret, (char*)__FUNCTION__);
@@ -114,7 +114,7 @@ int location_preference_foreach_available_property_values(location_service_h ser
 
 int location_preference_foreach_available_languages(location_service_h service, location_preference_available_language_cb callback, void* user_data)
 {
-    LocationObject* object = NULL;
+    LocationMapObject* object = NULL;
     GList* keys = NULL;
     char* key = NULL;
     int ret = 0;
@@ -123,7 +123,7 @@ int location_preference_foreach_available_languages(location_service_h service, 
     LOCATION_PREFERENCE_NULL_ARG_CHECK(callback);
 
     object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
-    ret = location_get_map_provider_capability_key(object, MAP_SERVICE_PREF_LANGUAGE, &keys);
+    ret = location_map_get_provider_capability_key(object, MAP_SERVICE_PREF_LANGUAGE, &keys);
     if(ret != LOCATION_ERROR_NONE)
     {
         return __convert_error_code(ret, (char*)__FUNCTION__);
@@ -144,8 +144,8 @@ int location_preference_foreach_available_languages(location_service_h service, 
 
 int location_preference_foreach_properties(location_service_h service, location_preference_property_cb callback, void* user_data)
 {
-    LocationPreference* pref = NULL;
-    LocationObject* object = NULL;
+    LocationMapPref* pref = NULL;
+    LocationMapObject* object = NULL;
     GList* keys = NULL;
     char* key = NULL;
     char* value = NULL;
@@ -154,46 +154,46 @@ int location_preference_foreach_properties(location_service_h service, location_
     LOCATION_PREFERENCE_NULL_ARG_CHECK(callback);
 
     object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
-    pref = location_get_map_service_pref(object);
+    pref = location_map_get_service_pref(object);
     LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
 
-    keys = location_pref_get_property_key(pref);
+    keys = location_map_pref_get_property_key(pref);
     while(keys) {
         key = keys->data;
-        value = (char*)location_pref_get_property(pref, key);
+        value = (char*)location_map_pref_get_property(pref, key);
         if(!callback(key, value, user_data))
             	break;
         keys = keys->next;
     }
 
-    location_pref_free(pref);
+    location_map_pref_free(pref);
     return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
 int location_preference_set(location_service_h service, const char* key, const char* value)
 {
-    LocationPreference* pref = NULL;
-    LocationObject* object = NULL;
+    LocationMapPref* pref = NULL;
+    LocationMapObject* object = NULL;
 
     LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
     LOCATION_PREFERENCE_NULL_ARG_CHECK(key);
     LOCATION_PREFERENCE_NULL_ARG_CHECK(value);
 
     object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
-    pref = location_get_map_service_pref(object);
+    pref = location_map_get_service_pref(object);
     LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
 
-    location_pref_set_property(pref, (gconstpointer)key, (gconstpointer)value);
-    location_set_map_service_pref(object, pref);
-    location_pref_free(pref);
+    location_map_pref_set_property(pref, (gconstpointer)key, (gconstpointer)value);
+    location_map_set_service_pref(object, pref);
+    location_map_pref_free(pref);
 
     return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
 int location_preference_get(location_service_h service, const char* key, char** value)
 {
-    LocationPreference* pref = NULL;
-    LocationObject* object = NULL;
+    LocationMapPref* pref = NULL;
+    LocationMapObject* object = NULL;
     char* ret = NULL;
 
     LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
@@ -201,61 +201,154 @@ int location_preference_get(location_service_h service, const char* key, char** 
     LOCATION_PREFERENCE_NULL_ARG_CHECK(value);
 
     object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
-    pref = location_get_map_service_pref(object);
+    pref = location_map_get_service_pref(object);
     LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
 
-    ret = (char*)location_pref_get_property(pref, (gconstpointer)key);
+    ret = (char*)location_map_pref_get_property(pref, (gconstpointer)key);
     if(ret != NULL)
     {
         *value = strdup(ret);
-        location_pref_free(pref);
-        return LOCATION_PREFERENCE_ERROR_NONE;
+        location_map_pref_free(pref);
     }
     else
     {
         *value = NULL;
-        location_pref_free(pref);
+        location_map_pref_free(pref);
         LOCATION_PREFERENCE_PRINT_ERROR_CODE(LOCATION_PREFERENCE_ERROR_INVALID_KEY, "LOCATION_PREFERENCE_ERROR_INVALID_KEY");
     }
+
+    return LOCATION_PREFERENCE_ERROR_NONE;
+}
+
+int location_preference_set_provider(location_service_h service, char* provider)
+{
+    LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
+    LOCATION_PREFERENCE_NULL_ARG_CHECK(provider);
+
+    LocationMapObject *object = NULL;
+    LocationMapPref *pref = NULL;
+    gboolean ret = FALSE;
+
+    object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
+    pref = location_map_get_service_pref(object);
+    LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
+
+    ret = location_map_pref_set_provider_name(pref, provider);
+    if (!ret) {
+        location_map_pref_free(pref);
+    	LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_KEY, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
+    }
+    ret = location_map_set_service_pref(object, pref);
+    if (!ret) {
+        location_map_pref_free(pref);
+    	LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_KEY, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
+    }
+
+    location_map_pref_free(pref);
+    return LOCATION_PREFERENCE_ERROR_NONE;
+}
+
+int location_preference_get_provider(location_service_h service, char** provider)
+{
+    LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
+    LOCATION_PREFERENCE_NULL_ARG_CHECK(provider);
+
+    LocationMapObject *object = NULL;
+    LocationMapPref *pref = NULL;
+    gchar* current_provider = NULL;
+
+    object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
+    pref = location_map_get_service_pref(object);
+    LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
+
+    current_provider = location_map_pref_get_provider_name(pref);
+    if (!current_provider) {
+        location_map_pref_free(pref);
+    	LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_KEY, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
+    }
+
+    *provider = g_strdup (current_provider);
+    location_map_pref_free(pref);
+
+    return LOCATION_PREFERENCE_ERROR_NONE;
+}
+
+int location_preference_get_default_provider(location_service_h service, char** provider)
+{
+    LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
+    LOCATION_PREFERENCE_NULL_ARG_CHECK(provider);
+
+    LocationMapObject *object = NULL;
+    gchar *current_provider = NULL;
+    object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
+    current_provider = location_map_get_default_provider(object);
+    LOCATION_PREFERENCE_CHECK_CONDITION(current_provider != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
+
+    *provider = g_strdup(current_provider);
+    g_free(current_provider);
+
+    return LOCATION_PREFERENCE_ERROR_NONE;
+}
+
+int location_preference_foreach_supported_provider(location_service_h service, location_preference_supported_provider_cb callback , void *user_data)
+{
+    LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
+    LOCATION_PREFERENCE_NULL_ARG_CHECK(callback);
+
+    LocationMapObject *object = NULL;
+    GList *providers = NULL;
+    gchar *provider = NULL;
+
+    object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
+    providers = location_map_get_supported_providers(object);
+    LOCATION_PREFERENCE_CHECK_CONDITION(providers != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
+    while(providers) {
+        provider = providers->data;
+	if(!callback(provider, user_data))
+		break;
+	providers = providers->next;
+    }
+
+    return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
 int location_preference_get_provider_name(location_service_h service, char** provider)
 {
-    LocationPreference* pref = NULL;
-    LocationObject* object = NULL;
+    LocationMapPref* pref = NULL;
+    LocationMapObject* object = NULL;
     char* ret = NULL;
 
     LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
     LOCATION_PREFERENCE_NULL_ARG_CHECK(provider);
 
     object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
-    pref = location_get_map_service_pref(object);
+    pref = location_map_get_service_pref(object);
     LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
 
-    ret = location_pref_get_provider_name(pref);
+    ret = location_map_pref_get_provider_name(pref);
     if(ret != NULL)
         *provider = strdup(ret);
     else
         *provider = NULL;
 
-    location_pref_free(pref);
+    location_map_pref_free(pref);
     return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
 int location_preference_get_distance_unit(location_service_h service, location_preference_distance_unit_e* unit)
 {
-    LocationPreference* pref = NULL;
-    LocationObject* object = NULL;
+    LocationMapPref* pref = NULL;
+    LocationMapObject* object = NULL;
     char* ret = NULL;
 
     LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
     LOCATION_PREFERENCE_NULL_ARG_CHECK(unit);
 
     object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
-    pref = location_get_map_service_pref(object);
+    pref = location_map_get_service_pref(object);
     LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
 
-    ret = location_pref_get_distance_unit(pref);
+    ret = location_map_pref_get_distance_unit(pref);
     if(ret != NULL)
     {
         switch(ret[0]) {
@@ -275,20 +368,20 @@ int location_preference_get_distance_unit(location_service_h service, location_p
                     *unit = LOCATION_PREFERENCE_DISTANCE_UNIT_M;
                 break;
         }
-        location_pref_free(pref);
+        location_map_pref_free(pref);
         return LOCATION_PREFERENCE_ERROR_NONE;
     }
     else
     {
-        location_pref_free(pref);
+        location_map_pref_free(pref);
         LOCATION_PREFERENCE_PRINT_ERROR_CODE(LOCATION_PREFERENCE_ERROR_RESULT_NOT_FOUND, "LOCATION_PREFERENCE_ERROR_RESULT_NOT_FOUND");
     }
 }
 
 int location_preference_set_distance_unit(location_service_h service, location_preference_distance_unit_e unit)
 {
-    LocationPreference* pref = NULL;
-    LocationObject* object = NULL;
+    LocationMapPref* pref = NULL;
+    LocationMapObject* object = NULL;
     char* distance = NULL;
 
     LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
@@ -313,56 +406,97 @@ int location_preference_set_distance_unit(location_service_h service, location_p
     }
 
     object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
-    pref = location_get_map_service_pref(object);
+    pref = location_map_get_service_pref(object);
     LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
 
-    location_pref_set_distance_unit(pref, distance);
-    location_set_map_service_pref(object, pref);
-    location_pref_free(pref);
+    location_map_pref_set_distance_unit(pref, distance);
+    location_map_set_service_pref(object, pref);
+    location_map_pref_free(pref);
 
     return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
 int location_preference_get_language(location_service_h service, char** language)
 {
-    LocationPreference* pref = NULL;
-    LocationObject* object = NULL;
+    LocationMapPref* pref = NULL;
+    LocationMapObject* object = NULL;
     char* ret = NULL;
 
     LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
     LOCATION_PREFERENCE_NULL_ARG_CHECK(language);
 
     object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
-    pref = location_get_map_service_pref(object);
+    pref = location_map_get_service_pref(object);
     LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
 
-    ret = location_pref_get_language(pref);
+    ret = location_map_pref_get_language(pref);
     if(ret != NULL)
         *language = strdup(ret);
     else
         *language = NULL;
 
-    location_pref_free(pref);
+    location_map_pref_free(pref);
     return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
 int location_preference_set_language(location_service_h service, const char* language)
 {
-    LocationPreference* pref = NULL;
-    LocationObject* object = NULL;
+    LocationMapPref* pref = NULL;
+    LocationMapObject* object = NULL;
 
     LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
     LOCATION_PREFERENCE_NULL_ARG_CHECK(language);
 
     object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
-    pref = location_get_map_service_pref(object);
+    pref = location_map_get_service_pref(object);
     LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
 
-    location_pref_set_language(pref, language);
-    location_set_map_service_pref(object, pref);
-    location_pref_free(pref);
+    location_map_pref_set_language(pref, language);
+    location_map_set_service_pref(object, pref);
+    location_map_pref_free(pref);
 
     return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
 
+int location_preference_get_country_code(location_service_h service, char** country_code)
+{
+    LocationMapPref* pref = NULL;
+    LocationMapObject* object = NULL;
+    char* ret = NULL;
+
+    LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
+    LOCATION_PREFERENCE_NULL_ARG_CHECK(country_code);
+
+    object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
+    pref = location_map_get_service_pref(object);
+    LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
+
+    ret = location_map_pref_get_country(pref);
+    if(ret != NULL)
+        *country_code = strdup(ret);
+    else
+        *country_code = NULL;
+
+    location_map_pref_free(pref);
+    return LOCATION_PREFERENCE_ERROR_NONE;
+}
+
+int location_preference_set_country_code(location_service_h service, const char* country_code)
+{
+    LocationMapPref* pref = NULL;
+    LocationMapObject* object = NULL;
+
+    LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
+    LOCATION_PREFERENCE_NULL_ARG_CHECK(country_code);
+
+    object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
+    pref = location_map_get_service_pref(object);
+    LOCATION_PREFERENCE_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
+
+    location_map_pref_set_country(pref, country_code);
+    location_map_set_service_pref(object, pref);
+    location_map_pref_free(pref);
+
+    return LOCATION_PREFERENCE_ERROR_NONE;
+}

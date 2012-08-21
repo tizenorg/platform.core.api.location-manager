@@ -82,7 +82,7 @@ static void __cb_service_updated(GObject * self, guint type, gpointer data, gpoi
 												  handle->user_data
 												  [_LOCATIONS_EVENT_TYPE_VELOCITY]);
 	}
-	if (type == POSITION_UPDATED && handle->user_cb[_LOCATIONS_EVENT_TYPE_POSITION]) {
+	else if (type == POSITION_UPDATED && handle->user_cb[_LOCATIONS_EVENT_TYPE_POSITION]) {
 		LocationPosition *pos = (LocationPosition *) data;
 		LOGI("[%s] Current position: timestamp : %d, latitude : %f, altitude: %f, longitude: %f", __FUNCTION__,
 		     pos->timestamp, pos->latitude, pos->altitude, pos->longitude);
@@ -90,6 +90,13 @@ static void __cb_service_updated(GObject * self, guint type, gpointer data, gpoi
 												  pos->altitude, pos->timestamp,
 												  handle->user_data
 												  [_LOCATIONS_EVENT_TYPE_POSITION]);
+	}
+	else if (type == SATELLITE_UPDATED && handle->user_cb[_LOCATIONS_EVENT_TYPE_SATELLITE]) {
+		LocationSatellite *sat = (LocationSatellite *)data;
+		LOGI("[%s] Current satellite information: timestamp : %d, number of active : %d, number of inview : %d", __FUNCTION__,
+		     sat->timestamp, sat->num_of_sat_used, sat->num_of_sat_inview);
+		((gps_status_satellite_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_SATELLITE]) (sat->num_of_sat_used, sat->num_of_sat_inview,
+												 sat->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_SATELLITE]);
 	}
 }
 
@@ -238,8 +245,8 @@ bool location_manager_is_supported_method(location_method_e method)
 	case LOCATIONS_METHOD_WPS:
 		_method = LOCATION_METHOD_WPS;
 		break;
-	case LOCATIONS_METHOD_SPS:
-		_method = LOCATION_METHOD_SPS;
+	case LOCATIONS_METHOD_CPS:
+		_method = LOCATION_METHOD_CPS;
 		break;
 	default:
 		_method = LOCATION_METHOD_NONE;
@@ -256,9 +263,6 @@ int location_manager_create(location_method_e method, location_manager_h * manag
 
 	LocationMethod _method = LOCATION_METHOD_NONE;
 	switch (method) {
-	case LOCATIONS_METHOD_NONE:
-		_method = LOCATION_METHOD_NONE;
-		break;
 	case LOCATIONS_METHOD_HYBRID:
 		_method = LOCATION_METHOD_HYBRID;
 		break;
@@ -268,9 +272,11 @@ int location_manager_create(location_method_e method, location_manager_h * manag
 	case LOCATIONS_METHOD_WPS:
 		_method = LOCATION_METHOD_WPS;
 		break;
-	case LOCATIONS_METHOD_SPS:
-		_method = LOCATION_METHOD_SPS;
+	case LOCATIONS_METHOD_CPS:
+		_method = LOCATION_METHOD_CPS;
 		break;
+	case LOCATIONS_METHOD_NONE:
+		return LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
 	default:
 		{
 			LOGE("[%s] LOCATIONS_ERROR_INVALID_PARAMETER(0x%08x) : Out of range (location_method_e) - method : %d ",
@@ -399,8 +405,6 @@ int location_manager_get_method(location_manager_h manager, location_method_e * 
 		*method = LOCATIONS_METHOD_NONE;
 		break;
 	case LOCATION_METHOD_HYBRID:
-	case LOCATION_METHOD_CPS:
-	case LOCATION_METHOD_IPS:
 		*method = LOCATIONS_METHOD_HYBRID;
 		break;
 	case LOCATION_METHOD_GPS:
@@ -409,8 +413,8 @@ int location_manager_get_method(location_manager_h manager, location_method_e * 
 	case LOCATION_METHOD_WPS:
 		*method = LOCATIONS_METHOD_WPS;
 		break;
-	case LOCATION_METHOD_SPS:
-		*method = LOCATIONS_METHOD_SPS;
+	case LOCATION_METHOD_CPS:
+		*method = LOCATIONS_METHOD_CPS;
 		break;
 	default:
 		{
@@ -460,7 +464,7 @@ int location_manager_get_position(location_manager_h manager, double *altitude, 
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_get_velocity(location_manager_h manager, int *climb, int *direction, int *speed, time_t * timestamp)
+int location_manager_get_velocity(location_manager_h manager, double *climb, double *direction, double *speed, time_t * timestamp)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(climb);
@@ -549,7 +553,7 @@ int location_manager_get_last_position(location_manager_h manager, double *altit
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_get_last_velocity(location_manager_h manager, int *climb, int *direction, int *speed, time_t * timestamp)
+int location_manager_get_last_velocity(location_manager_h manager, double *climb, double *direction, double *speed, time_t * timestamp)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(climb);
@@ -601,14 +605,13 @@ int location_manager_get_last_accuracy(location_manager_h manager, location_accu
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_set_position_updated_cb(location_manager_h manager, location_position_updated_cb callback, int interval,
-					     void *user_data)
+int location_manager_set_position_updated_cb(location_manager_h manager, location_position_updated_cb callback, int interval, void *user_data)
 {
 	LOCATIONS_CHECK_CONDITION(interval >= 1
 				  && interval <= 120, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
-	g_object_set(handle->object, "update-interval", interval, NULL);
+	g_object_set(handle->object, "pos-interval", interval, NULL);
 	return __set_callback(_LOCATIONS_EVENT_TYPE_POSITION, manager, callback, user_data);
 }
 
@@ -617,8 +620,13 @@ int location_manager_unset_position_updated_cb(location_manager_h manager)
 	return __unset_callback(_LOCATIONS_EVENT_TYPE_POSITION, manager);
 }
 
-int location_manager_set_velocity_updated_cb(location_manager_h manager, location_velocity_updated_cb callback, void *user_data)
+int location_manager_set_velocity_updated_cb(location_manager_h manager, location_velocity_updated_cb callback, int interval, void *user_data)
 {
+	LOCATIONS_CHECK_CONDITION(interval >= 1
+				  && interval <= 120, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
+	LOCATIONS_NULL_ARG_CHECK(manager);
+	location_manager_s *handle = (location_manager_s *) manager;
+	g_object_set(handle->object, "vel-interval", interval, NULL);
 	return __set_callback(_LOCATIONS_EVENT_TYPE_VELOCITY, manager, callback, user_data);
 }
 
@@ -646,6 +654,30 @@ int location_manager_set_zone_changed_cb(location_manager_h manager, location_zo
 int location_manager_unset_zone_changed_cb(location_manager_h manager)
 {
 	return __unset_callback(_LOCATIONS_EVENT_TYPE_BOUNDARY, manager);
+}
+
+int location_manager_get_distance(double start_latitude, double start_longitude, double end_latitude, double end_longitude, double *distance)
+{
+	LOCATIONS_NULL_ARG_CHECK(distance);
+	LOCATIONS_CHECK_CONDITION(start_latitude>=-90 && start_latitude<=90,LOCATION_BOUNDS_ERROR_INVALID_PARAMETER,"LOCATION_BOUNDS_ERROR_INVALID_PARAMETER");
+	LOCATIONS_CHECK_CONDITION(start_longitude>=-180 && start_longitude<=180,LOCATION_BOUNDS_ERROR_INVALID_PARAMETER, "LOCATION_BOUNDS_ERROR_INVALID_PARAMETER");
+	LOCATIONS_CHECK_CONDITION(end_latitude>=-90 && end_latitude<=90,LOCATION_BOUNDS_ERROR_INVALID_PARAMETER, "LOCATION_BOUNDS_ERROR_INVALID_PARAMETER");
+	LOCATIONS_CHECK_CONDITION(end_longitude>=-180 && end_longitude<=180,LOCATION_BOUNDS_ERROR_INVALID_PARAMETER, "LOCATION_BOUNDS_ERROR_INVALID_PARAMETER");
+
+	int ret = LOCATION_ERROR_NONE;
+	ulong u_distance;
+
+	LocationPosition *start = location_position_new (0, start_latitude, start_longitude, 0, LOCATION_STATUS_2D_FIX);
+	LocationPosition *end = location_position_new (0, end_latitude, end_longitude, 0, LOCATION_STATUS_2D_FIX);
+
+	ret = location_get_distance (start, end, &u_distance);
+	if (ret != LOCATION_ERROR_NONE) {
+		return __convert_error_code(ret, (char *)__FUNCTION__);
+	}
+
+	*distance = (double)u_distance;
+
+	return LOCATIONS_ERROR_NONE;
 }
 
 int location_manager_send_command(const char *cmd)
@@ -709,23 +741,15 @@ int gps_status_get_satellite(location_manager_h manager, int *num_of_active, int
 	LOCATIONS_NULL_ARG_CHECK(num_of_inview);
 	LOCATIONS_NULL_ARG_CHECK(timestamp);
 	location_manager_s *handle = (location_manager_s *) manager;
-	if (handle->method == LOCATIONS_METHOD_HYBRID) {
-		LocationMethod _method = LOCATION_METHOD_NONE;
-		g_object_get(handle->object, "method", &_method, NULL);
-		if (_method != LOCATION_METHOD_GPS) {
+	LocationSatellite *sat = NULL;
+	int ret = location_get_satellite (handle->object, &sat);
+	if (ret != LOCATION_ERROR_NONE || sat == NULL) {
+		if (ret == LOCATION_ERROR_NOT_SUPPORTED) {
 			LOGE("[%s] LOCATIONS_ERROR_INCORRECT_METHOD(0x%08x) : method - %d", __FUNCTION__,
 			     LOCATIONS_ERROR_INCORRECT_METHOD, handle->method);
 			return LOCATIONS_ERROR_INCORRECT_METHOD;
 		}
-	} else if (handle->method != LOCATIONS_METHOD_GPS) {
-		LOGE("[%s] LOCATIONS_ERROR_INCORRECT_METHOD(0x%08x) : method - %d", __FUNCTION__,
-		     LOCATIONS_ERROR_INCORRECT_METHOD, handle->method);
-		return LOCATIONS_ERROR_INCORRECT_METHOD;
-	}
 
-	LocationSatellite *sat = NULL;
-	g_object_get(handle->object, "satellite", &sat, NULL);
-	if (sat == NULL) {
 		LOGE("[%s] LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE(0x%08x) : satellite is NULL ", __FUNCTION__,
 		     LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE);
 		return LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
@@ -739,28 +763,36 @@ int gps_status_get_satellite(location_manager_h manager, int *num_of_active, int
 	return LOCATIONS_ERROR_NONE;
 }
 
+int gps_status_set_satellite_updated_cb(location_manager_h manager, gps_status_satellite_updated_cb callback, int interval, void *user_data)
+{
+	LOCATIONS_CHECK_CONDITION(interval >= 1
+				  && interval <= 120, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
+	LOCATIONS_NULL_ARG_CHECK(manager);
+	location_manager_s *handle = (location_manager_s *) manager;
+	g_object_set(handle->object, "sat-interval", interval, NULL);
+	return __set_callback(_LOCATIONS_EVENT_TYPE_SATELLITE, manager, callback, user_data);
+}
+
+int gps_status_unset_satellite_updated_cb(location_manager_h manager)
+{
+	return __unset_callback(_LOCATIONS_EVENT_TYPE_SATELLITE, manager);
+}
+
+
 int gps_status_foreach_satellites_in_view(location_manager_h manager, gps_status_get_satellites_cb callback, void *user_data)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(callback);
 	location_manager_s *handle = (location_manager_s *) manager;
-	if (handle->method == LOCATIONS_METHOD_HYBRID) {
-		LocationMethod _method = LOCATION_METHOD_NONE;
-		g_object_get(handle->object, "method", &_method, NULL);
-		if (_method != LOCATION_METHOD_GPS) {
+	LocationSatellite *sat = NULL;
+	int ret = location_get_satellite (handle->object, &sat);
+	if (ret != LOCATION_ERROR_NONE || sat == NULL) {
+		if (ret == LOCATION_ERROR_NOT_SUPPORTED) {
 			LOGE("[%s] LOCATIONS_ERROR_INCORRECT_METHOD(0x%08x) : method - %d", __FUNCTION__,
 			     LOCATIONS_ERROR_INCORRECT_METHOD, handle->method);
 			return LOCATIONS_ERROR_INCORRECT_METHOD;
 		}
-	} else if (handle->method != LOCATIONS_METHOD_GPS) {
-		LOGE("[%s] LOCATIONS_ERROR_INCORRECT_METHOD(0x%08x) : method - %d", __FUNCTION__,
-		     LOCATIONS_ERROR_INCORRECT_METHOD, handle->method);
-		return LOCATIONS_ERROR_INCORRECT_METHOD;
-	}
 
-	LocationSatellite *sat = NULL;
-	g_object_get(handle->object, "satellite", &sat, NULL);
-	if (sat == NULL) {
 		LOGE("[%s] LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE(0x%08x) : satellite is NULL ", __FUNCTION__,
 		     LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE);
 		return LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
@@ -789,25 +821,19 @@ int gps_status_get_last_satellite(location_manager_h manager, int *num_of_active
 	LOCATIONS_NULL_ARG_CHECK(num_of_inview);
 	LOCATIONS_NULL_ARG_CHECK(timestamp);
 	location_manager_s *handle = (location_manager_s *) manager;
-	int ret;
-	if (handle->method == LOCATIONS_METHOD_HYBRID) {
-		LocationMethod _method = LOCATION_METHOD_NONE;
-		g_object_get(handle->object, "method", &_method, NULL);
-		if (_method != LOCATION_METHOD_GPS) {
+	int ret = LOCATION_ERROR_NONE;
+	LocationSatellite *last_sat = NULL;
+	ret = location_get_last_satellite(handle->object, &last_sat);
+	if (ret != LOCATION_ERROR_NONE || last_sat == NULL) {
+		if (ret == LOCATION_ERROR_NOT_SUPPORTED) {
 			LOGE("[%s] LOCATIONS_ERROR_INCORRECT_METHOD(0x%08x) : method - %d", __FUNCTION__,
 			     LOCATIONS_ERROR_INCORRECT_METHOD, handle->method);
 			return LOCATIONS_ERROR_INCORRECT_METHOD;
 		}
-	} else if (handle->method != LOCATIONS_METHOD_GPS) {
-		LOGE("[%s] LOCATIONS_ERROR_INCORRECT_METHOD(0x%08x) : method - %d", __FUNCTION__,
-		     LOCATIONS_ERROR_INCORRECT_METHOD, handle->method);
-		return LOCATIONS_ERROR_INCORRECT_METHOD;
-	}
 
-	LocationSatellite *last_sat = NULL;
-	ret = location_get_last_satellite(handle->object, &last_sat);
-	if (ret != LOCATION_ERROR_NONE) {
-		return __convert_error_code(ret, (char *)__FUNCTION__);
+		LOGE("[%s] LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE(0x%08x) : satellite is NULL ", __FUNCTION__,
+		     LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE);
+		return LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
 	}
 
 	*num_of_active = last_sat->num_of_sat_used;
@@ -824,24 +850,18 @@ int gps_status_foreach_last_satellites_in_view(location_manager_h manager, gps_s
 	LOCATIONS_NULL_ARG_CHECK(callback);
 	location_manager_s *handle = (location_manager_s *) manager;
 	int ret;
-	if (handle->method == LOCATIONS_METHOD_HYBRID) {
-		LocationMethod _method = LOCATION_METHOD_NONE;
-		g_object_get(handle->object, "method", &_method, NULL);
-		if (_method != LOCATION_METHOD_GPS) {
+	LocationSatellite *last_sat = NULL;
+	ret = location_get_last_satellite(handle->object, &last_sat);
+	if (ret != LOCATION_ERROR_NONE || last_sat == NULL) {
+		if (ret == LOCATION_ERROR_NOT_SUPPORTED) {
 			LOGE("[%s] LOCATIONS_ERROR_INCORRECT_METHOD(0x%08x) : method - %d", __FUNCTION__,
 			     LOCATIONS_ERROR_INCORRECT_METHOD, handle->method);
 			return LOCATIONS_ERROR_INCORRECT_METHOD;
 		}
-	} else if (handle->method != LOCATIONS_METHOD_GPS) {
-		LOGE("[%s] LOCATIONS_ERROR_INCORRECT_METHOD(0x%08x) : method - %d", __FUNCTION__,
-		     LOCATIONS_ERROR_INCORRECT_METHOD, handle->method);
-		return LOCATIONS_ERROR_INCORRECT_METHOD;
-	}
 
-	LocationSatellite *last_sat = NULL;
-	ret = location_get_last_satellite(handle->object, &last_sat);
-	if (ret != LOCATION_ERROR_NONE) {
-		return __convert_error_code(ret, (char *)__FUNCTION__);
+		LOGE("[%s] LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE(0x%08x) : satellite is NULL ", __FUNCTION__,
+		     LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE);
+		return LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
 	}
 
 	int i;

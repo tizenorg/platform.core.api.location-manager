@@ -55,7 +55,7 @@ typedef enum
     LOCATIONS_METHOD_HYBRID,    /**< This method selects the best method available at the moment. */
     LOCATIONS_METHOD_GPS,       /**< This method uses Global Positioning System. */
     LOCATIONS_METHOD_WPS,       /**< This method uses Wifi Positioning System. */
-    LOCATIONS_METHOD_SPS        /**< This method uses sensor. */
+    LOCATIONS_METHOD_CPS	/**< This method uses Cellular Positioning System. */
 } location_method_e;
 
 /**
@@ -106,11 +106,11 @@ typedef enum
  * @{
  */
 /**
- * @brief Called every 1 second with updated position information.
+ * @brief Called at defined interval with updated position information.
  * @param[in] latitude  The updated latitude [-90.0 ~ 90.0] (degrees)
  * @param[in] longitude The updated longitude [-180.0 ~ 180.0] (degrees)
  * @param[in] altitude  The updated altitude (meters)
- * @param[in] timestamp  The timestamp (time when measurement took place)
+ * @param[in] timestamp  The timestamp (time when measurement took place or 0 if invalid)
  * @param[in] user_data  The user data passed from the call registration function
  * @pre location_manager_start() will invoke this callback if you register this callback using location_manager_set_position_updated_cb()
  * @see location_manager_start()
@@ -119,11 +119,11 @@ typedef enum
 typedef void(*location_position_updated_cb)(double latitude, double longitude, double altitude, time_t timestamp, void *user_data);
 
 /**
- * @brief Called every 1 second with updated velocity information.
+ * @brief Called at defined interval with updated velocity information.
  * @param[in] speed  The updated speed (km/h)
  * @param[in] direction The updated direction (in degrees from the north)
  * @param[in] climb  The updated climb (km/h)
- * @param[in] timestamp  The timestamp (time when measurement took place)
+ * @param[in] timestamp  The timestamp (time when measurement took place or 0 if invalid)
  * @param[in] user_data  The user data passed from the callback registration function
  * @pre location_manager_start() will invoke this callback if you register this callback using location_manager_set_velocity_updated_cb()
  * @see location_manager_start()
@@ -149,7 +149,7 @@ typedef void(*location_service_state_changed_cb)(location_service_state_e state,
  * @param[in] latitude  The updated latitude [-90.0 ~ 90.0] (degrees)
  * @param[in] longitude The updated longitude [-180.0 ~ 180.0] (degrees)
  * @param[in] altitude  The updated altitude (meters)
- * @param[in] timestamp  The timestamp (time when measurement took place)
+ * @param[in] timestamp  The timestamp (time when measurement took place or 0 if invalid)
  * @param[in] user_data  The user data passed from the callback registration function
  * @pre location_manager_start() will invoke this callback if you register this callback using location_manager_set_zone_changed_cb()
  * @see #location_boundary_state_e
@@ -328,7 +328,7 @@ int location_manager_get_method(location_manager_h manager, location_method_e *m
  * @param[out]  altitude    The current altitude (meters)
  * @param[out]  latitude    The current latitude [-90.0 ~ 90.0] (degrees)
  * @param[out]  longitude   The current longitude [-180.0 ~ 180.0] (degrees)
- * @param[out]  timestamp   The timestamp (time when measurement took place)
+ * @param[out]  timestamp   The timestamp (time when measurement took place or 0 if valid)
  * @return 0 on success, otherwise a negative error value.
  * @retval #LOCATIONS_ERROR_NONE Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
@@ -347,7 +347,7 @@ int location_manager_get_position(location_manager_h manager, double *altitude, 
  * @param[out]  climb       The climb (km/h)
  * @param[out]  direction   The direction, degrees from the north
  * @param[out]  speed       The speed (km/h)
- * @param[out]  timestamp   The timestamp (time when measurement took place)
+ * @param[out]  timestamp   The timestamp (time when measurement took place or 0 if invalid)
  * @return 0 on success, otherwise a negative error value.
  * @retval #LOCATIONS_ERROR_NONE Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
@@ -355,7 +355,7 @@ int location_manager_get_position(location_manager_h manager, double *altitude, 
  * @retval #LOCATIONS_ERROR_GPS_SETTING_OFF GPS is not enabled
  * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start()
  */
-int location_manager_get_velocity(location_manager_h manager, int *climb, int *direction, int *speed, time_t *timestamp);
+int location_manager_get_velocity(location_manager_h manager, double *climb, double *direction, double *speed, time_t *timestamp);
 
 /**
  * @brief Gets the current accuracy information.
@@ -381,7 +381,7 @@ int location_manager_get_accuracy(location_manager_h manager, location_accuracy_
  * @param[out]  altitude    The last altitude (meters)
  * @param[out]  latitude    The last latitude [-90.0 ~ 90.0] (degrees)
  * @param[out]  longitude   The last longitude [-180.0 ~ 180.0] (degrees)
- * @param[out]  timestamp   The timestamp (time when measurement took place)
+ * @param[out]  timestamp   The timestamp (time when measurement took place or 0 if invalid)
  * @return 0 on success, otherwise a negative error value.
  * @retval #LOCATIONS_ERROR_NONE Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
@@ -398,13 +398,13 @@ int location_manager_get_last_position(location_manager_h manager, double *altit
  * @param[out]  climb       The last climb (km/h)
  * @param[out]  direction   The last direction, degrees from the north
  * @param[out]  speed       The last speed (km/h)
- * @param[out]  timestamp   The timestamp (time when measurement took place)
+ * @param[out]  timestamp   The timestamp (time when measurement took place or 0 if invalid)
  * @return 0 on success, otherwise a negative error value.
  * @retval #LOCATIONS_ERROR_NONE Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
  * @pre The location manager handle must be created by location_manager_create()
  */
-int location_manager_get_last_velocity(location_manager_h manager, int *climb, int *direction, int *speed, time_t *timestamp);
+int location_manager_get_last_velocity(location_manager_h manager, double *climb, double *direction, double *speed, time_t *timestamp);
 
 /**
  * @brief Gets the last accuracy information which is recorded.
@@ -420,7 +420,7 @@ int location_manager_get_last_velocity(location_manager_h manager, int *climb, i
 int location_manager_get_last_accuracy(location_manager_h manager, location_accuracy_level_e *level, double *horizontal, double *vertical);
 
 /**
- * @brief Registers a callback function to be invoked every 1 second with updated position information.
+ * @brief Registers a callback function to be invoked at defined interval with updated position information.
  *
  * @param[in]   manager     The location manager handle
  * @param[in]   callback    The callback function to register
@@ -433,7 +433,7 @@ int location_manager_get_last_accuracy(location_manager_h manager, location_accu
  * @see location_manager_unset_position_updated_cb()
  * @see location_position_updated_cb()
  */
-int location_manager_set_position_updated_cb(location_manager_h manager, location_position_updated_cb callback,  int interval, void *user_data);
+int location_manager_set_position_updated_cb(location_manager_h manager, location_position_updated_cb callback, int interval, void *user_data);
 
 /**
  * @brief	Unregisters the callback function.
@@ -447,10 +447,11 @@ int location_manager_set_position_updated_cb(location_manager_h manager, locatio
 int location_manager_unset_position_updated_cb(location_manager_h manager);
 
 /**
- * @brief Registers a callback function to be invoked every 1 second with updated velocity information.
+ * @brief Registers a callback function to be invoked at defined interval with updated velocity information.
  *
  * @param[in]   manager     The location manager handle
  * @param[in]   callback    The callback function to register
+ * @param[in]   interval   The interval [1 ~ 120] (seconds)
  * @param[in]   user_data   The user data to be passed to the callback function
  * @return 0 on success, otherwise a negative error value.
  * @retval  #LOCATIONS_ERROR_NONE               Successful
@@ -459,7 +460,7 @@ int location_manager_unset_position_updated_cb(location_manager_h manager);
  * @see location_manager_unset_velocity_updated_cb()
  * @see location_velocity_updated_cb()
  */
-int location_manager_set_velocity_updated_cb(location_manager_h manager, location_velocity_updated_cb callback, void *user_data);
+int location_manager_set_velocity_updated_cb(location_manager_h manager, location_velocity_updated_cb callback, int interval, void *user_data);
 
 /**
  * @brief	Unregisters the callback function.
@@ -527,6 +528,19 @@ int location_manager_set_zone_changed_cb(location_manager_h manager, location_zo
 int location_manager_unset_zone_changed_cb(location_manager_h manager);
 
 /**
+ * @brief Gets the distance in meters between two locations.
+ * @param[in] start_latitude The starting latitude [-90.0 ~ 90.0] (degrees)
+ * @param[in] start_longitude The starting longitude [-180.0 ~ 180.0] (degrees)
+ * @param[in] end_latitude The ending latitude [-90.0 ~ 90.0] (degrees)
+ * @param[in] end_longitude The ending longitude [-180.0 ~ 180.0] (degrees)
+ * @param[out] distance   The distance between two locations (meters)
+ * @return 0 on success, otherwise a negative error value.
+ * @retval #LOCATIONS_ERROR_NONE Successful
+ * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
+ */
+int location_manager_get_distance(double start_latitude, double start_longitude, double end_latitude, double end_longitude, double *distance);
+
+/**
  * @brief	Sends command to the server.
  * @param[in]	cmd The command string to be sent
  * @return 0 on success, otherwise a negative error value.
@@ -564,6 +578,18 @@ int location_manager_send_command(const char *cmd);
 typedef bool(*gps_status_get_satellites_cb)(unsigned int azimuth, unsigned int elevation, unsigned int prn, int snr, bool is_active, void *user_data);
 
 /**
+ * @brief Called at defined interval with updated satellite information.
+ * @param[out]  num_of_active   The last number of active satellites
+ * @param[out]  num_of_inview   The last number of satellites in view
+ * @param[out]  timestamp   The last timestamp (time when last measurement took place or 0 if invalid)
+ * @param[in] user_data  The user data passed from the call registration function
+ * @pre location_manager_start() will invoke this callback if you register this callback using location_manager_set_position_updated_cb()
+ * @see location_manager_start()
+ * @see location_manager_set_position_updated_cb()
+ */
+typedef void(*gps_status_satellite_updated_cb)(int num_of_active, int num_of_inview,  time_t timestamp, void *user_data);
+
+/**
  * @brief Gets the GPS NMEA data.
  * @remarks This call is valid only for location managers with #LOCATIONS_METHOD_GPS method.\n
  * @a nmea must be released with @c free() by you.
@@ -586,7 +612,7 @@ int gps_status_get_nmea(location_manager_h manager, char **nmea);
  * @param[in]   manager The location manager handle
  * @param[out]  num_of_active   The number of active satellites
  * @param[out]  num_of_inview   The number of satellites in view
- * @param[out]  timestamp   The timestamp (time when measurement took place)
+ * @param[out]  timestamp   The timestamp (time when measurement took place or 0 if invalid)
  * @return 0 on success, otherwise a negative error value.
  * @retval #LOCATIONS_ERROR_NONE Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
@@ -596,6 +622,33 @@ int gps_status_get_nmea(location_manager_h manager, char **nmea);
  * @see   gps_status_foreach_satellites_in_view()
  */
 int  gps_status_get_satellite(location_manager_h manager, int *num_of_active, int *num_of_inview, time_t *timestamp);
+
+/**
+ * @brief Registers a callback function to be invoked at defined interval with updated satellite information.
+ *
+ * @param[in]   manager     The location manager handle
+ * @param[in]   callback    The callback function to register
+ * @param[in]   interval   The interval [1 ~ 120] (seconds)
+ * @param[in]   user_data   The user data to be passed to the callback function
+ * @return 0 on success, otherwise a negative error value.
+ * @retval  #LOCATIONS_ERROR_NONE               Successful
+ * @retval  #LOCATIONS_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @post  gps_status_satellite_updated_cb() will be invoked
+ * @see gps_status_unset_satellite_updated_cb()
+ * @see gps_status_satellite_updated_cb()
+ */
+int gps_status_set_satellite_updated_cb(location_manager_h manager, gps_status_satellite_updated_cb callback, int interval, void *user_data);
+
+/**
+ * @brief	Unregisters the callback function.
+ *
+ * @param[in]   manager The location manager handle
+ * @return  0 on success, otherwise a negative error value.
+ * @retval  #LOCATIONS_ERROR_NONE               Successful
+ * @retval  #LOCATIONS_ERROR_INVALID_PARAMETER  Invalid parameter
+ * @see gps_status_set_satellite_updated_cb()
+ */
+int gps_status_unset_satellite_updated_cb(location_manager_h manager);
 
 /**
  * @brief Invokes the callback function for each satellite.
@@ -621,7 +674,7 @@ int  gps_status_foreach_satellites_in_view (location_manager_h manager, gps_stat
  * @param[in]   manager The location manager handle
  * @param[out]  num_of_active   The last number of active satellites
  * @param[out]  num_of_inview   The last number of satellites in view
- * @param[out]  timestamp   The last timestamp (time when last measurement took place)
+ * @param[out]  timestamp   The last timestamp (time when last measurement took place or 0 if invalid)
  * @return 0 on success, otherwise a negative error value.
  * @retval #LOCATIONS_ERROR_NONE Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument

@@ -134,7 +134,7 @@ int location_bounds_create_polygon(location_coords_s* coords_list, int length, l
  * @see location_bounds_create_circle()
  * @see location_bounds_create_polygon()
  */
-bool location_bounds_is_contains_coordinates(location_bounds_h bounds, location_coords_s coords);
+bool location_bounds_contains_coordinates(location_bounds_h bounds, location_coords_s coords);
 
 /**
  * @brief Get the type of location bounds.

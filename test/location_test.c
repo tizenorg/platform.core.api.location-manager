@@ -232,10 +232,10 @@ void location_bounds_test()
 	test_coords.latitude = 12;
 	test_coords.longitude = 12;
 
-	if (location_bounds_is_contains_coordinates(bounds_poly, test_coords))
-		printf("location_bounds_is_contains_coordinates() retrun TRUE \n");
+	if (location_bounds_contains_coordinates(bounds_poly, test_coords))
+		printf("location_bounds_contains_coordinates() retrun TRUE \n");
 	else
-		printf("location_bounds_is_contains_coordinates() retrun FALSE \n");
+		printf("location_bounds_contains_coordinates() retrun FALSE \n");
 
 	//print current bounds
 	ret = location_manager_foreach_boundary(manager, __location_bounds_cb, (void *)manager);
@@ -249,7 +249,7 @@ void location_get_last_information_test()
 {
 	int ret;
 	double altitude, latitude, longitude;
-	int climb, direction, speed;
+	double climb, direction, speed;
 	double horizontal, vertical;
 	location_accuracy_level_e level;
 	time_t timestamp;
@@ -266,7 +266,7 @@ void location_get_last_information_test()
 	if (ret != LOCATIONS_ERROR_NONE) {
 		printf(" Fail : location_manager_get_last_velocity ---> %d \n", ret);
 	} else {
-		printf("climb: %d, direction: %d, speed: %d\n", climb, direction, speed);
+		printf("climb: %f, direction: %f, speed: %f\n", climb, direction, speed);
 	}
 
 	ret = location_manager_get_last_accuracy(manager, &level, &horizontal, &vertical);

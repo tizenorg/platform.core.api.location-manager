@@ -48,15 +48,16 @@ static location_bounds_type_e __convert_bounds_type(LocationBoundaryType type)
 	location_bounds_type_e ret;
 	switch(type)
 	{
-	case LOCATION_BOUNDARY_NONE:
-	case LOCATION_BOUNDARY_RECT:
-		ret = LOCATION_BOUNDS_RECT;
-		break;
 	case LOCATION_BOUNDARY_CIRCLE:
 		ret = LOCATION_BOUNDS_CIRCLE;
 		break;
 	case LOCATION_BOUNDARY_POLYGON:
 		ret = LOCATION_BOUNDS_POLYGON;
+		break;
+	case LOCATION_BOUNDARY_NONE:
+	case LOCATION_BOUNDARY_RECT:
+	default:
+		ret = LOCATION_BOUNDS_RECT;
 		break;
 	}
 	return ret;
@@ -176,7 +177,7 @@ int location_bounds_create_polygon(location_coords_s* coords_list, int length, l
 	return LOCATION_BOUNDS_ERROR_NONE;
 }
 
-bool location_bounds_is_contains_coordinates(location_bounds_h bounds, location_coords_s coords)
+bool location_bounds_contains_coordinates(location_bounds_h bounds, location_coords_s coords)
 {
 	if (!bounds)
 		return FALSE;
@@ -187,7 +188,6 @@ bool location_bounds_is_contains_coordinates(location_bounds_h bounds, location_
 	LocationPosition *pos = location_position_new(0, coords.latitude, coords.longitude, 0, LOCATION_STATUS_2D_FIX);
 	if (!pos)
 		return FALSE;
-
 	gboolean is_inside = location_boundary_if_inside((LocationBoundary*)bounds, pos);
 	location_position_free (pos);
 	bool result = is_inside?TRUE:FALSE;
