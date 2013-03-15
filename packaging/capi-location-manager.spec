@@ -1,10 +1,10 @@
 #sbs-git:slp/api/location-manager capi-location-manager 0.1.0 d1ee09a32e8bc0e9ed48ece37c641a7393c086c5
 Name:       capi-location-manager
 Summary:    A Location Manager library in Tizen Native API
-Version: 0.1.7
+Version: 0.1.9
 Release:    1
 Group:      System/Libraries
-License:    Apache Licensc, Version 2.0
+License:    Apache License, Version 2.0
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires:  cmake
 BuildRequires:  pkgconfig(dlog)

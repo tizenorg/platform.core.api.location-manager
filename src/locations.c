@@ -1,18 +1,18 @@
 /*
-* Copyright (c) 2011 Samsung Electronics Co., Ltd All Rights Reserved
-*
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
-*
-* http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
-*/
+ * Copyright (c) 2011-2013 Samsung Electronics Co., Ltd All Rights Reserved
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -402,6 +402,10 @@ int location_manager_create(location_method_e method, location_manager_h * manag
 	handle->method = method;
 	handle->is_continue_foreach_bounds = TRUE;
 	handle->bounds_list = NULL;
+
+	handle->sig_id[_LOCATION_SIGNAL_SERVICE_ENABLED] = g_signal_connect(handle->object, "service-enabled", G_CALLBACK(__cb_service_enabled), handle);
+	handle->sig_id[_LOCATION_SIGNAL_SERVICE_DISABLED] = g_signal_connect(handle->object, "service-disabled", G_CALLBACK(__cb_service_disabled), handle);
+
 	*manager = (location_manager_h) handle;
 	return LOCATIONS_ERROR_NONE;
 }
@@ -410,6 +414,9 @@ int location_manager_destroy(location_manager_h manager)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
+
+	g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_SERVICE_ENABLED]);
+	g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_SERVICE_DISABLED]);
 
 	int ret = location_free(handle->object);
 	if (ret != LOCATIONS_ERROR_NONE) {
@@ -424,11 +431,9 @@ int location_manager_start(location_manager_h manager)
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
 
-	g_signal_connect(handle->object, "service-enabled", G_CALLBACK(__cb_service_enabled), handle);
-	g_signal_connect(handle->object, "service-disabled", G_CALLBACK(__cb_service_disabled), handle);
-	g_signal_connect(handle->object, "service-updated", G_CALLBACK(__cb_service_updated), handle);
-	g_signal_connect(handle->object, "zone-in", G_CALLBACK(__cb_zone_in), handle);
-	g_signal_connect(handle->object, "zone-out", G_CALLBACK(__cb_zone_out), handle);
+	handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED] = g_signal_connect(handle->object, "service-updated", G_CALLBACK(__cb_service_updated), handle);
+	handle->sig_id[_LOCATION_SIGNAL_ZONE_IN] = g_signal_connect(handle->object, "zone-in", G_CALLBACK(__cb_zone_in), handle);
+	handle->sig_id[_LOCATION_SIGNAL_ZONE_OUT] = g_signal_connect(handle->object, "zone-out", G_CALLBACK(__cb_zone_out), handle);
 
 	int ret = location_start(handle->object);
 	if (ret != LOCATION_ERROR_NONE) {
@@ -441,6 +446,10 @@ int location_manager_stop(location_manager_h manager)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
+
+	g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED]);
+	g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_ZONE_IN]);
+	g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_ZONE_OUT]);
 
 	int ret = location_stop(handle->object);
 	if (ret != LOCATION_ERROR_NONE) {
