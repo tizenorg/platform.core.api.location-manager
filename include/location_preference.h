@@ -381,6 +381,32 @@ int location_preference_set_country_code(location_service_h service, const char*
 int location_preference_get_country_code(location_service_h service, char** country_code);
 
 /**
+ * @brief Sets the account.
+ * @param[in] location_service The memory pointer of location service handle.
+ *                 It must be converted into location_service_h by GET_LOCATION_SERVICE().
+ * @param[in] maps_key The maps key
+ * @return 0 on success, otherwise a negative error value.
+ * @retval #LOCATION_PREFERENCE_ERROR_NONE Successful
+ * @retval #LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @see	GET_LOCATION_SERVICE()
+ * @see	location_preference_get_maps_key()
+ */
+int location_preference_set_maps_key(location_service_h service, const char* maps_key);
+
+/**
+ * @brief Gets the account.
+ * @param[in] location_service The memory pointer of location service handle.
+ *                 It must be converted into location_service_h by GET_LOCATION_SERVICE().
+ * @param[out] maps_key The maps key
+ * @return 0 on success, otherwise a negative error value.
+ * @retval #LOCATION_PREFERENCE_ERROR_NONE Successful
+ * @retval #LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER	Invalid parameter
+ * @see	GET_LOCATION_SERVICE()
+ * @see	location_preference_set_maps_key()
+ */
+int location_preference_get_maps_key(location_service_h service, char** maps_key);
+
+/**
  * @}
  */
 

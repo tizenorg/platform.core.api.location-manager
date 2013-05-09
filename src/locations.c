@@ -72,8 +72,7 @@ static void __cb_service_updated(GObject * self, guint type, gpointer data, gpoi
 	location_manager_s *handle = (location_manager_s *) userdata;
 	if (type == VELOCITY_UPDATED && handle->user_cb[_LOCATIONS_EVENT_TYPE_VELOCITY]) {
 		LocationVelocity *vel = (LocationVelocity *) data;
-		LOCATIONS_LOGI("Current velocity: timestamp : %d, speed: %f, direction : %f, climb : %f",
-		     vel->timestamp, vel->speed, vel->direction, vel->climb);
+		LOCATIONS_LOGI("Current velocity: timestamp : %d", vel->timestamp);
 		((location_velocity_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_VELOCITY]) (vel->speed, vel->direction,
 												  vel->climb, vel->timestamp,
 												  handle->user_data
@@ -81,8 +80,7 @@ static void __cb_service_updated(GObject * self, guint type, gpointer data, gpoi
 	}
 	else if (type == POSITION_UPDATED && handle->user_cb[_LOCATIONS_EVENT_TYPE_POSITION]) {
 		LocationPosition *pos = (LocationPosition *) data;
-		LOCATIONS_LOGI("Current position: timestamp : %d, latitude : %f, altitude: %f, longitude: %f",
-		     pos->timestamp, pos->latitude, pos->altitude, pos->longitude);
+		LOCATIONS_LOGI("Current position: timestamp : %d", pos->timestamp);
 		((location_position_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_POSITION]) (pos->latitude, pos->longitude,
 												  pos->altitude, pos->timestamp,
 												  handle->user_data
@@ -331,7 +329,7 @@ static void __foreach_boundary(LocationBoundary * boundary, void *user_data)
 * Public Implementation
 */
 
-bool location_manager_is_supported_method(location_method_e method)
+EXPORT_API bool location_manager_is_supported_method(location_method_e method)
 {
 	LocationMethod _method = LOCATION_METHOD_NONE;
 	switch (method) {
@@ -354,7 +352,7 @@ bool location_manager_is_supported_method(location_method_e method)
 	return location_is_supported_method(_method);
 }
 
-int location_manager_create(location_method_e method, location_manager_h * manager)
+EXPORT_API int location_manager_create(location_method_e method, location_manager_h * manager)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	if (location_init() != LOCATION_ERROR_NONE)
@@ -410,7 +408,7 @@ int location_manager_create(location_method_e method, location_manager_h * manag
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_destroy(location_manager_h manager)
+EXPORT_API int location_manager_destroy(location_manager_h manager)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
@@ -426,7 +424,7 @@ int location_manager_destroy(location_manager_h manager)
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_start(location_manager_h manager)
+EXPORT_API int location_manager_start(location_manager_h manager)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
@@ -442,7 +440,7 @@ int location_manager_start(location_manager_h manager)
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_stop(location_manager_h manager)
+EXPORT_API int location_manager_stop(location_manager_h manager)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
@@ -458,7 +456,7 @@ int location_manager_stop(location_manager_h manager)
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_add_boundary(location_manager_h manager, location_bounds_h bounds)
+EXPORT_API int location_manager_add_boundary(location_manager_h manager, location_bounds_h bounds)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(bounds);
@@ -474,7 +472,7 @@ int location_manager_add_boundary(location_manager_h manager, location_bounds_h 
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_remove_boundary(location_manager_h manager, location_bounds_h bounds)
+EXPORT_API int location_manager_remove_boundary(location_manager_h manager, location_bounds_h bounds)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(bounds);
@@ -490,7 +488,7 @@ int location_manager_remove_boundary(location_manager_h manager, location_bounds
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_foreach_boundary(location_manager_h manager, location_bounds_cb callback, void *user_data)
+EXPORT_API int location_manager_foreach_boundary(location_manager_h manager, location_bounds_cb callback, void *user_data)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(callback);
@@ -506,7 +504,7 @@ int location_manager_foreach_boundary(location_manager_h manager, location_bound
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_get_method(location_manager_h manager, location_method_e * method)
+EXPORT_API int location_manager_get_method(location_manager_h manager, location_method_e * method)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(method);
@@ -540,7 +538,7 @@ int location_manager_get_method(location_manager_h manager, location_method_e * 
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_get_position(location_manager_h manager, double *altitude, double *latitude, double *longitude,
+EXPORT_API int location_manager_get_position(location_manager_h manager, double *altitude, double *latitude, double *longitude,
 				  time_t * timestamp)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
@@ -577,7 +575,58 @@ int location_manager_get_position(location_manager_h manager, double *altitude, 
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_get_velocity(location_manager_h manager, double *climb, double *direction, double *speed, time_t * timestamp)
+EXPORT_API int location_manager_get_location(location_manager_h manager, double *altitude, double *latitude, double *longitude, double *climb, double *direction, double *speed, location_accuracy_level_e *level, double *horizontal, double *vertical, time_t *timestamp)
+{
+	LOCATIONS_NULL_ARG_CHECK(manager);
+	LOCATIONS_NULL_ARG_CHECK(altitude);
+	LOCATIONS_NULL_ARG_CHECK(latitude);
+	LOCATIONS_NULL_ARG_CHECK(longitude);
+	LOCATIONS_NULL_ARG_CHECK(climb);
+	LOCATIONS_NULL_ARG_CHECK(direction);
+	LOCATIONS_NULL_ARG_CHECK(speed);
+	LOCATIONS_NULL_ARG_CHECK(level);
+	LOCATIONS_NULL_ARG_CHECK(horizontal);
+	LOCATIONS_NULL_ARG_CHECK(vertical);
+	LOCATIONS_NULL_ARG_CHECK(timestamp);
+
+	location_manager_s *handle = (location_manager_s *) manager;
+	int ret;
+	LocationPosition *pos = NULL;
+	LocationVelocity *vel = NULL;
+	LocationAccuracy *acc = NULL;
+	ret = location_get_position_ext(handle->object, &pos, &vel, &acc);
+	if (ret != LOCATION_ERROR_NONE) {
+		return __convert_error_code(ret);
+	}
+
+	if (pos->status == LOCATION_STATUS_NO_FIX) {
+		*altitude = -1;
+		*latitude = -1;
+		*longitude = -1;
+	} else {
+		if (pos->status == LOCATION_STATUS_3D_FIX) {
+			*altitude = pos->altitude;
+		} else {
+			*altitude = -1;
+		}
+		*latitude = pos->latitude;
+		*longitude = pos->longitude;
+	}
+	*timestamp = pos->timestamp;
+	*climb = vel->climb;
+	*direction = vel->direction;
+	*speed = vel->speed;
+	*level = acc->level;
+	*horizontal = acc->horizontal_accuracy;
+	*vertical = acc->vertical_accuracy;
+
+	location_position_free(pos);
+	location_velocity_free(vel);
+	location_accuracy_free(acc);
+	return LOCATIONS_ERROR_NONE;
+}
+
+EXPORT_API int location_manager_get_velocity(location_manager_h manager, double *climb, double *direction, double *speed, time_t * timestamp)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(climb);
@@ -603,7 +652,7 @@ int location_manager_get_velocity(location_manager_h manager, double *climb, dou
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_get_accuracy(location_manager_h manager, location_accuracy_level_e * level, double *horizontal,
+EXPORT_API int location_manager_get_accuracy(location_manager_h manager, location_accuracy_level_e * level, double *horizontal,
 				  double *vertical)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
@@ -632,7 +681,7 @@ int location_manager_get_accuracy(location_manager_h manager, location_accuracy_
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_get_last_position(location_manager_h manager, double *altitude, double *latitude, double *longitude,
+EXPORT_API int location_manager_get_last_position(location_manager_h manager, double *altitude, double *latitude, double *longitude,
 				       time_t * timestamp)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
@@ -670,7 +719,58 @@ int location_manager_get_last_position(location_manager_h manager, double *altit
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_get_last_velocity(location_manager_h manager, double *climb, double *direction, double *speed, time_t * timestamp)
+EXPORT_API int location_manager_get_last_location(location_manager_h manager, double *altitude, double *latitude, double *longitude, double *climb, double *direction, double *speed, location_accuracy_level_e * level, double *horizontal, double *vertical, time_t * timestamp)
+{
+	LOCATIONS_NULL_ARG_CHECK(manager);
+	LOCATIONS_NULL_ARG_CHECK(altitude);
+	LOCATIONS_NULL_ARG_CHECK(latitude);
+	LOCATIONS_NULL_ARG_CHECK(longitude);
+	LOCATIONS_NULL_ARG_CHECK(climb);
+	LOCATIONS_NULL_ARG_CHECK(direction);
+	LOCATIONS_NULL_ARG_CHECK(speed);
+	LOCATIONS_NULL_ARG_CHECK(level);
+	LOCATIONS_NULL_ARG_CHECK(horizontal);
+	LOCATIONS_NULL_ARG_CHECK(vertical);
+	LOCATIONS_NULL_ARG_CHECK(timestamp);
+
+	location_manager_s *handle = (location_manager_s *) manager;
+
+	int ret;
+	LocationPosition *last_pos = NULL;
+	LocationVelocity *last_vel = NULL;
+	LocationAccuracy *last_acc = NULL;
+	ret = location_get_last_position_ext(handle->object, &last_pos, &last_vel, &last_acc);
+	if (ret != LOCATION_ERROR_NONE) {
+		return __convert_error_code(ret);
+	}
+
+	if (last_pos->status == LOCATION_STATUS_NO_FIX) {
+		*altitude = -1;
+		*latitude = -1;
+		*longitude = -1;
+	} else {
+		if (last_pos->status == LOCATION_STATUS_3D_FIX) {
+			*altitude = last_pos->altitude;
+		} else {
+			*altitude = -1;
+		}
+		*latitude = last_pos->latitude;
+		*longitude = last_pos->longitude;
+	}
+	*timestamp = last_pos->timestamp;
+	*climb = last_vel->climb;
+	*direction = last_vel->direction;
+	*speed = last_vel->speed;
+	*level = last_acc->level;
+	*horizontal = last_acc->horizontal_accuracy;
+	*vertical = last_acc->vertical_accuracy;
+	location_position_free(last_pos);
+	location_velocity_free(last_vel);
+	location_accuracy_free(last_acc);
+	return LOCATIONS_ERROR_NONE;
+}
+
+EXPORT_API int location_manager_get_last_velocity(location_manager_h manager, double *climb, double *direction, double *speed, time_t * timestamp)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(climb);
@@ -697,7 +797,7 @@ int location_manager_get_last_velocity(location_manager_h manager, double *climb
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_get_last_accuracy(location_manager_h manager, location_accuracy_level_e * level, double *horizontal,
+EXPORT_API int location_manager_get_last_accuracy(location_manager_h manager, location_accuracy_level_e * level, double *horizontal,
 				       double *vertical)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
@@ -722,7 +822,7 @@ int location_manager_get_last_accuracy(location_manager_h manager, location_accu
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_get_accessibility_state(location_accessibility_state_e* state)
+EXPORT_API int location_manager_get_accessibility_state(location_accessibility_state_e* state)
 {
 	LOCATIONS_NULL_ARG_CHECK(state);
 
@@ -750,7 +850,7 @@ int location_manager_get_accessibility_state(location_accessibility_state_e* sta
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_set_position_updated_cb(location_manager_h manager, location_position_updated_cb callback, int interval, void *user_data)
+EXPORT_API int location_manager_set_position_updated_cb(location_manager_h manager, location_position_updated_cb callback, int interval, void *user_data)
 {
 	LOCATIONS_CHECK_CONDITION(interval >= 1
 				  && interval <= 120, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
@@ -760,12 +860,12 @@ int location_manager_set_position_updated_cb(location_manager_h manager, locatio
 	return __set_callback(_LOCATIONS_EVENT_TYPE_POSITION, manager, callback, user_data);
 }
 
-int location_manager_unset_position_updated_cb(location_manager_h manager)
+EXPORT_API int location_manager_unset_position_updated_cb(location_manager_h manager)
 {
 	return __unset_callback(_LOCATIONS_EVENT_TYPE_POSITION, manager);
 }
 
-int location_manager_set_velocity_updated_cb(location_manager_h manager, location_velocity_updated_cb callback, int interval, void *user_data)
+EXPORT_API int location_manager_set_velocity_updated_cb(location_manager_h manager, location_velocity_updated_cb callback, int interval, void *user_data)
 {
 	LOCATIONS_CHECK_CONDITION(interval >= 1
 				  && interval <= 120, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
@@ -775,33 +875,33 @@ int location_manager_set_velocity_updated_cb(location_manager_h manager, locatio
 	return __set_callback(_LOCATIONS_EVENT_TYPE_VELOCITY, manager, callback, user_data);
 }
 
-int location_manager_unset_velocity_updated_cb(location_manager_h manager)
+EXPORT_API int location_manager_unset_velocity_updated_cb(location_manager_h manager)
 {
 	return __unset_callback(_LOCATIONS_EVENT_TYPE_VELOCITY, manager);
 }
 
-int location_manager_set_service_state_changed_cb(location_manager_h manager, location_service_state_changed_cb callback,
+EXPORT_API int location_manager_set_service_state_changed_cb(location_manager_h manager, location_service_state_changed_cb callback,
 						  void *user_data)
 {
 	return __set_callback(_LOCATIONS_EVENT_TYPE_SERVICE_STATE, manager, callback, user_data);
 }
 
-int location_manager_unset_service_state_changed_cb(location_manager_h manager)
+EXPORT_API int location_manager_unset_service_state_changed_cb(location_manager_h manager)
 {
 	return __unset_callback(_LOCATIONS_EVENT_TYPE_SERVICE_STATE, manager);
 }
 
-int location_manager_set_zone_changed_cb(location_manager_h manager, location_zone_changed_cb callback, void *user_data)
+EXPORT_API int location_manager_set_zone_changed_cb(location_manager_h manager, location_zone_changed_cb callback, void *user_data)
 {
 	return __set_callback(_LOCATIONS_EVENT_TYPE_BOUNDARY, manager, callback, user_data);
 }
 
-int location_manager_unset_zone_changed_cb(location_manager_h manager)
+EXPORT_API int location_manager_unset_zone_changed_cb(location_manager_h manager)
 {
 	return __unset_callback(_LOCATIONS_EVENT_TYPE_BOUNDARY, manager);
 }
 
-int location_manager_get_distance(double start_latitude, double start_longitude, double end_latitude, double end_longitude, double *distance)
+EXPORT_API int location_manager_get_distance(double start_latitude, double start_longitude, double end_latitude, double end_longitude, double *distance)
 {
 	LOCATIONS_NULL_ARG_CHECK(distance);
 	LOCATIONS_CHECK_CONDITION(start_latitude>=-90 && start_latitude<=90,LOCATIONS_ERROR_INVALID_PARAMETER,"LOCATIONS_ERROR_INVALID_PARAMETER");
@@ -825,7 +925,7 @@ int location_manager_get_distance(double start_latitude, double start_longitude,
 	return LOCATIONS_ERROR_NONE;
 }
 
-int location_manager_send_command(const char *cmd)
+EXPORT_API int location_manager_send_command(const char *cmd)
 {
 	LOCATIONS_NULL_ARG_CHECK(cmd);
 
@@ -842,7 +942,7 @@ int location_manager_send_command(const char *cmd)
 // GPS Status & Satellites
 ////////////////////////////////////////
 
-int gps_status_get_nmea(location_manager_h manager, char **nmea)
+EXPORT_API int gps_status_get_nmea(location_manager_h manager, char **nmea)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(nmea);
@@ -879,7 +979,7 @@ int gps_status_get_nmea(location_manager_h manager, char **nmea)
 	return LOCATIONS_ERROR_NONE;
 }
 
-int gps_status_get_satellite(location_manager_h manager, int *num_of_active, int *num_of_inview, time_t *timestamp)
+EXPORT_API int gps_status_get_satellite(location_manager_h manager, int *num_of_active, int *num_of_inview, time_t *timestamp)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(num_of_active);
@@ -908,7 +1008,7 @@ int gps_status_get_satellite(location_manager_h manager, int *num_of_active, int
 	return LOCATIONS_ERROR_NONE;
 }
 
-int gps_status_set_satellite_updated_cb(location_manager_h manager, gps_status_satellite_updated_cb callback, int interval, void *user_data)
+EXPORT_API int gps_status_set_satellite_updated_cb(location_manager_h manager, gps_status_satellite_updated_cb callback, int interval, void *user_data)
 {
 	LOCATIONS_CHECK_CONDITION(interval >= 1
 				  && interval <= 120, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
@@ -918,13 +1018,13 @@ int gps_status_set_satellite_updated_cb(location_manager_h manager, gps_status_s
 	return __set_callback(_LOCATIONS_EVENT_TYPE_SATELLITE, manager, callback, user_data);
 }
 
-int gps_status_unset_satellite_updated_cb(location_manager_h manager)
+EXPORT_API int gps_status_unset_satellite_updated_cb(location_manager_h manager)
 {
 	return __unset_callback(_LOCATIONS_EVENT_TYPE_SATELLITE, manager);
 }
 
 
-int gps_status_foreach_satellites_in_view(location_manager_h manager, gps_status_get_satellites_cb callback, void *user_data)
+EXPORT_API int gps_status_foreach_satellites_in_view(location_manager_h manager, gps_status_get_satellites_cb callback, void *user_data)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(callback);
@@ -959,7 +1059,7 @@ int gps_status_foreach_satellites_in_view(location_manager_h manager, gps_status
 	return LOCATIONS_ERROR_NONE;
 }
 
-int gps_status_get_last_satellite(location_manager_h manager, int *num_of_active, int *num_of_inview, time_t *timestamp)
+EXPORT_API int gps_status_get_last_satellite(location_manager_h manager, int *num_of_active, int *num_of_inview, time_t *timestamp)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(num_of_active);
@@ -988,7 +1088,7 @@ int gps_status_get_last_satellite(location_manager_h manager, int *num_of_active
 	return LOCATIONS_ERROR_NONE;
 }
 
-int gps_status_foreach_last_satellites_in_view(location_manager_h manager, gps_status_get_satellites_cb callback,
+EXPORT_API int gps_status_foreach_last_satellites_in_view(location_manager_h manager, gps_status_get_satellites_cb callback,
 					       void *user_data)
 {
 	LOCATIONS_NULL_ARG_CHECK(manager);

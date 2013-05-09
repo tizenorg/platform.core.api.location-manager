@@ -341,6 +341,34 @@ int location_manager_get_method(location_manager_h manager, location_method_e *m
 int location_manager_get_position(location_manager_h manager, double *altitude, double *latitude, double *longitude, time_t *timestamp);
 
 /**
+ * @brief Gets the current position information.
+ * @details
+ * The result is current altitude, latitude, longitude, climb, direction, speed, level, horizontal and verticalwith a measurement timestamp.
+ *
+ * If @a altitude is negative, only altitude and latitude are available (fix status is 2D).
+ * If @a altitude is positive, fix status is 3D and returned altitude value is the result of measurement.
+ *
+ * @param[in]   manager     The location manager handle
+ * @param[out]  altitude    The current altitude (meters)
+ * @param[out]  latitude    The current latitude [-90.0 ~ 90.0] (degrees)
+ * @param[out]  longitude   The current longitude [-180.0 ~ 180.0] (degrees)
+ * @param[out]  climb       The climb (km/h)
+ * @param[out]  direction   The direction, degrees from the north
+ * @param[out]  speed       The speed (km/h)
+ * @param[out]  level The accuracy level
+ * @param[out]  horizontal The horizontal accuracy (meters)
+ * @param[out]  vertical The vertical accuracy (meters)
+ * @param[out]  timestamp   The timestamp (time when measurement took place or 0 if valid)
+ * @return 0 on success, otherwise a negative error value.
+ * @retval #LOCATIONS_ERROR_NONE Successful
+ * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
+ * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE Service not available
+ * @retval #LOCATIONS_ERROR_GPS_SETTING_OFF GPS is not enabled
+ * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start()
+ */
+int location_manager_get_location(location_manager_h manager, double *altitude, double *latitude, double *longitude, double *climb, double *direction, double *speed, location_accuracy_level_e *level, double *horizontal, double *vertical, time_t *timestamp);
+
+/**
  * @brief Gets the current velocity information.
  * @details
  * The result is current climb, direction, and speed, with a measurement timestamp.
@@ -390,6 +418,30 @@ int location_manager_get_accuracy(location_manager_h manager, location_accuracy_
  * @pre The location manager handle must be created by location_manager_create()
  */
 int location_manager_get_last_position(location_manager_h manager, double *altitude, double *latitude, double *longitude, time_t *timestamp);
+
+/**
+ * @brief Gets the last location information.
+ * @details The @a altitude, @a latitude, @a longitude, @a climb, @a direction, @a speed and @c timestamp values should be 0, if there is no record of any previous position information.
+ * @details If @a altitude is negative, only altitude and latitude are available (fix status is 2D).
+ * @details If @a altitude is positive, fix status is 3D and returned altitude value is the result of measurement.
+ * @param[in]   manager     The location manager handle
+ * @param[out]  altitude    The current altitude (meters)
+ * @param[out]  latitude    The current latitude [-90.0 ~ 90.0] (degrees)
+ * @param[out]  longitude   The current longitude [-180.0 ~ 180.0] (degrees)
+ * @param[out]  climb       The climb (km/h)
+ * @param[out]  direction   The direction, degrees from the north
+ * @param[out]  speed       The speed (km/h)
+ * @param[out]  level The accuracy level
+ * @param[out]  horizontal The horizontal accuracy (meters)
+ * @param[out]  vertical The vertical accuracy (meters)
+ * @param[out]  timestamp   The timestamp (time when measurement took place or 0 if valid)
+ * @return 0 on success, otherwise a negative error value.
+ * @retval #LOCATIONS_ERROR_NONE Successful
+ * @retval #LOCATIONS_ERROR_INVALID_PARAMETER Invalid argument
+ * @pre The location manager handle must be created by location_manager_create()
+ */
+int location_manager_get_last_location(location_manager_h manager, double *altitude, double *latitude, double *longitude, double *climb, double *direction, double *speed, location_accuracy_level_e *level, double *horizontal, double *vertical, time_t *timestamp);
+
 
 /**
  * @brief Gets the last velocity information which is recorded.

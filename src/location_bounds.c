@@ -52,7 +52,7 @@ static location_bounds_type_e __convert_bounds_type(LocationBoundaryType type)
 	return ret;
 }
 
-int location_bounds_create_rect(location_coords_s top_left, location_coords_s bottom_right, location_bounds_h * bounds)
+EXPORT_API int location_bounds_create_rect(location_coords_s top_left, location_coords_s bottom_right, location_bounds_h * bounds)
 {
 	LOCATIONS_NULL_ARG_CHECK(bounds);
 	LOCATIONS_CHECK_CONDITION(top_left.latitude>=-90 && top_left.latitude<=90,LOCATION_BOUNDS_ERROR_INVALID_PARAMETER,"LOCATION_BOUNDS_ERROR_INVALID_PARAMETER");
@@ -98,7 +98,7 @@ int location_bounds_create_rect(location_coords_s top_left, location_coords_s bo
 	return LOCATION_BOUNDS_ERROR_NONE;
 }
 
-int location_bounds_create_circle(location_coords_s center, double radius, location_bounds_h * bounds)
+EXPORT_API int location_bounds_create_circle(location_coords_s center, double radius, location_bounds_h * bounds)
 {
 	LOCATIONS_NULL_ARG_CHECK(bounds);
 	LOCATIONS_CHECK_CONDITION(radius>=0,LOCATION_BOUNDS_ERROR_INVALID_PARAMETER,"LOCATION_BOUNDS_ERROR_INVALID_PARAMETER");
@@ -134,7 +134,7 @@ int location_bounds_create_circle(location_coords_s center, double radius, locat
 	return LOCATION_BOUNDS_ERROR_NONE;
 }
 
-int location_bounds_create_polygon(location_coords_s * coords_list, int length, location_bounds_h * bounds)
+EXPORT_API int location_bounds_create_polygon(location_coords_s * coords_list, int length, location_bounds_h * bounds)
 {
 	LOCATIONS_NULL_ARG_CHECK(coords_list);
 	LOCATIONS_NULL_ARG_CHECK(bounds);
@@ -189,7 +189,7 @@ int location_bounds_create_polygon(location_coords_s * coords_list, int length, 
 	return LOCATION_BOUNDS_ERROR_NONE;
 }
 
-bool location_bounds_contains_coordinates(location_bounds_h bounds, location_coords_s coords)
+EXPORT_API bool location_bounds_contains_coordinates(location_bounds_h bounds, location_coords_s coords)
 {
 	if (!bounds)
 		return FALSE;
@@ -209,7 +209,7 @@ bool location_bounds_contains_coordinates(location_bounds_h bounds, location_coo
 	return result;
 }
 
-int location_bounds_get_type(location_bounds_h bounds, location_bounds_type_e * type)
+EXPORT_API int location_bounds_get_type(location_bounds_h bounds, location_bounds_type_e * type)
 {
 	LOCATIONS_NULL_ARG_CHECK(bounds);
 	LOCATIONS_NULL_ARG_CHECK(type);
@@ -218,7 +218,7 @@ int location_bounds_get_type(location_bounds_h bounds, location_bounds_type_e * 
 	return LOCATION_BOUNDS_ERROR_NONE;
 }
 
-int location_bounds_get_rect_coords(location_bounds_h bounds, location_coords_s * top_left, location_coords_s * bottom_right)
+EXPORT_API int location_bounds_get_rect_coords(location_bounds_h bounds, location_coords_s * top_left, location_coords_s * bottom_right)
 {
 	LOCATIONS_NULL_ARG_CHECK(bounds);
 	LOCATIONS_NULL_ARG_CHECK(top_left);
@@ -236,7 +236,7 @@ int location_bounds_get_rect_coords(location_bounds_h bounds, location_coords_s 
 	return LOCATION_BOUNDS_ERROR_NONE;
 }
 
-int location_bounds_get_circle_coords(location_bounds_h bounds, location_coords_s * center, double *radius)
+EXPORT_API int location_bounds_get_circle_coords(location_bounds_h bounds, location_coords_s * center, double *radius)
 {
 	LOCATIONS_NULL_ARG_CHECK(bounds);
 	LOCATIONS_NULL_ARG_CHECK(center);
@@ -253,7 +253,7 @@ int location_bounds_get_circle_coords(location_bounds_h bounds, location_coords_
 	return LOCATION_BOUNDS_ERROR_NONE;
 }
 
-int location_bounds_foreach_polygon_coords(location_bounds_h bounds, polygon_coords_cb callback, void *user_data)
+EXPORT_API int location_bounds_foreach_polygon_coords(location_bounds_h bounds, polygon_coords_cb callback, void *user_data)
 {
 	LOCATIONS_NULL_ARG_CHECK(bounds);
 	LOCATIONS_NULL_ARG_CHECK(callback);
@@ -279,7 +279,7 @@ int location_bounds_foreach_polygon_coords(location_bounds_h bounds, polygon_coo
 	return LOCATION_BOUNDS_ERROR_NONE;
 }
 
-int location_bounds_destroy(location_bounds_h bounds)
+EXPORT_API int location_bounds_destroy(location_bounds_h bounds)
 {
 	LOCATIONS_NULL_ARG_CHECK(bounds);
 	location_bounds_s *handle = (location_bounds_s *) bounds;
@@ -295,7 +295,7 @@ int location_bounds_destroy(location_bounds_h bounds)
 	return LOCATION_BOUNDS_ERROR_NONE;
 }
 
-int location_bounds_set_state_changed_cb(location_bounds_h bounds, location_bounds_state_changed_cb callback, void *user_data)
+EXPORT_API int location_bounds_set_state_changed_cb(location_bounds_h bounds, location_bounds_state_changed_cb callback, void *user_data)
 {
 	LOCATIONS_NULL_ARG_CHECK(bounds);
 	LOCATIONS_NULL_ARG_CHECK(callback);
@@ -305,7 +305,7 @@ int location_bounds_set_state_changed_cb(location_bounds_h bounds, location_boun
 	return LOCATION_BOUNDS_ERROR_NONE;
 }
 
-int location_bounds_unset_state_changed_cb(location_bounds_h bounds)
+EXPORT_API int location_bounds_unset_state_changed_cb(location_bounds_h bounds)
 {
 	LOCATIONS_NULL_ARG_CHECK(bounds);
 	location_bounds_s *handle = (location_bounds_s *) bounds;

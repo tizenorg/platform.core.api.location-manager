@@ -59,7 +59,7 @@ static int __convert_error_code(int code)
 /*
  * Public Implementation
  */
-int location_preference_foreach_available_property_keys(location_service_h service, location_preference_available_property_key_cb callback, void* user_data)
+EXPORT_API int location_preference_foreach_available_property_keys(location_service_h service, location_preference_available_property_key_cb callback, void* user_data)
 {
 	LocationMapObject* object = NULL;
 	GList* keys = NULL;
@@ -88,7 +88,7 @@ int location_preference_foreach_available_property_keys(location_service_h servi
 	}
 }
 
-int location_preference_foreach_available_property_values(location_service_h service, const char* key, location_preference_available_property_value_cb callback, void* user_data)
+EXPORT_API int location_preference_foreach_available_property_values(location_service_h service, const char* key, location_preference_available_property_value_cb callback, void* user_data)
 {
 	LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
 	LOCATION_PREFERENCE_NULL_ARG_CHECK(key);
@@ -96,7 +96,7 @@ int location_preference_foreach_available_property_values(location_service_h ser
 	return LOCATION_PREFERENCE_ERROR_RESULT_NOT_FOUND;
 }
 
-int location_preference_foreach_available_languages(location_service_h service, location_preference_available_language_cb callback, void* user_data)
+EXPORT_API int location_preference_foreach_available_languages(location_service_h service, location_preference_available_language_cb callback, void* user_data)
 {
 	LocationMapObject* object = NULL;
 	GList* keys = NULL;
@@ -125,7 +125,7 @@ int location_preference_foreach_available_languages(location_service_h service, 
 	}
 }
 
-int location_preference_foreach_available_country_codes(location_service_h service, location_preference_available_country_code_cb callback, void* user_data)
+EXPORT_API int location_preference_foreach_available_country_codes(location_service_h service, location_preference_available_country_code_cb callback, void* user_data)
 {
 	LocationMapObject* object = NULL;
 	GList* keys = NULL;
@@ -154,7 +154,7 @@ int location_preference_foreach_available_country_codes(location_service_h servi
 	return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
-int location_preference_foreach_properties(location_service_h service, location_preference_property_cb callback, void* user_data)
+EXPORT_API int location_preference_foreach_properties(location_service_h service, location_preference_property_cb callback, void* user_data)
 {
 	LocationMapPref* pref = NULL;
 	LocationMapObject* object = NULL;
@@ -182,7 +182,7 @@ int location_preference_foreach_properties(location_service_h service, location_
 	return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
-int location_preference_set(location_service_h service, const char* key, const char* value)
+EXPORT_API int location_preference_set(location_service_h service, const char* key, const char* value)
 {
 	LocationMapPref* pref = NULL;
 	LocationMapObject* object = NULL;
@@ -202,7 +202,7 @@ int location_preference_set(location_service_h service, const char* key, const c
 	return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
-int location_preference_get(location_service_h service, const char* key, char** value)
+EXPORT_API int location_preference_get(location_service_h service, const char* key, char** value)
 {
 	LocationMapPref* pref = NULL;
 	LocationMapObject* object = NULL;
@@ -232,7 +232,7 @@ int location_preference_get(location_service_h service, const char* key, char** 
 	return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
-int location_preference_set_provider(location_service_h service, char* provider)
+EXPORT_API int location_preference_set_provider(location_service_h service, char* provider)
 {
 	LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
 	LOCATION_PREFERENCE_NULL_ARG_CHECK(provider);
@@ -260,7 +260,7 @@ int location_preference_set_provider(location_service_h service, char* provider)
 	return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
-int location_preference_get_provider(location_service_h service, char** provider)
+EXPORT_API int location_preference_get_provider(location_service_h service, char** provider)
 {
 	LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
 	LOCATION_PREFERENCE_NULL_ARG_CHECK(provider);
@@ -285,7 +285,7 @@ int location_preference_get_provider(location_service_h service, char** provider
 	return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
-int location_preference_get_default_provider(location_service_h service, char** provider)
+EXPORT_API int location_preference_get_default_provider(location_service_h service, char** provider)
 {
 	LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
 	LOCATION_PREFERENCE_NULL_ARG_CHECK(provider);
@@ -302,7 +302,7 @@ int location_preference_get_default_provider(location_service_h service, char** 
 	return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
-int location_preference_foreach_supported_provider(location_service_h service, location_preference_supported_provider_cb callback , void *user_data)
+EXPORT_API int location_preference_foreach_supported_provider(location_service_h service, location_preference_supported_provider_cb callback , void *user_data)
 {
 	LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
 	LOCATION_PREFERENCE_NULL_ARG_CHECK(callback);
@@ -324,7 +324,7 @@ int location_preference_foreach_supported_provider(location_service_h service, l
 	return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
-int location_preference_get_provider_name(location_service_h service, char** provider)
+EXPORT_API int location_preference_get_provider_name(location_service_h service, char** provider)
 {
 	LocationMapPref* pref = NULL;
 	LocationMapObject* object = NULL;
@@ -347,7 +347,7 @@ int location_preference_get_provider_name(location_service_h service, char** pro
 	return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
-int location_preference_get_distance_unit(location_service_h service, location_preference_distance_unit_e* unit)
+EXPORT_API int location_preference_get_distance_unit(location_service_h service, location_preference_distance_unit_e* unit)
 {
 	LocationMapPref* pref = NULL;
 	LocationMapObject* object = NULL;
@@ -390,7 +390,7 @@ int location_preference_get_distance_unit(location_service_h service, location_p
 	}
 }
 
-int location_preference_set_distance_unit(location_service_h service, location_preference_distance_unit_e unit)
+EXPORT_API int location_preference_set_distance_unit(location_service_h service, location_preference_distance_unit_e unit)
 {
 	LocationMapPref* pref = NULL;
 	LocationMapObject* object = NULL;
@@ -428,7 +428,7 @@ int location_preference_set_distance_unit(location_service_h service, location_p
 	return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
-int location_preference_get_language(location_service_h service, char** language)
+EXPORT_API int location_preference_get_language(location_service_h service, char** language)
 {
 	LocationMapPref* pref = NULL;
 	LocationMapObject* object = NULL;
@@ -451,7 +451,7 @@ int location_preference_get_language(location_service_h service, char** language
 	return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
-int location_preference_set_language(location_service_h service, const char* language)
+EXPORT_API int location_preference_set_language(location_service_h service, const char* language)
 {
 	LocationMapPref* pref = NULL;
 	LocationMapObject* object = NULL;
@@ -471,7 +471,7 @@ int location_preference_set_language(location_service_h service, const char* lan
 }
 
 
-int location_preference_get_country_code(location_service_h service, char** country_code)
+EXPORT_API int location_preference_get_country_code(location_service_h service, char** country_code)
 {
 	LocationMapPref* pref = NULL;
 	LocationMapObject* object = NULL;
@@ -494,7 +494,7 @@ int location_preference_get_country_code(location_service_h service, char** coun
 	return LOCATION_PREFERENCE_ERROR_NONE;
 }
 
-int location_preference_set_country_code(location_service_h service, const char* country_code)
+EXPORT_API int location_preference_set_country_code(location_service_h service, const char* country_code)
 {
 	LocationMapPref* pref = NULL;
 	LocationMapObject* object = NULL;
@@ -511,4 +511,47 @@ int location_preference_set_country_code(location_service_h service, const char*
 	location_map_pref_free(pref);
 
 	return LOCATION_PREFERENCE_ERROR_NONE;
+}
+
+EXPORT_API int location_preference_set_maps_key (location_service_h service, const char* maps_key)
+{
+	LocationMapPref* pref = NULL;
+	LocationMapObject* object = NULL;
+
+	LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
+	LOCATION_PREFERENCE_NULL_ARG_CHECK(maps_key);
+
+	object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
+	pref = location_map_get_service_pref(object);
+	LOCATIONS_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
+
+	location_map_pref_set_maps_key(pref, maps_key);
+	location_map_set_service_pref(object, pref);
+	location_map_pref_free(pref);
+	
+	return LOCATION_PREFERENCE_ERROR_NONE;
+}
+
+EXPORT_API int location_preference_get_maps_key (location_service_h service, char** maps_key)
+{
+	LocationMapPref* pref = NULL;
+	LocationMapObject* object = NULL;
+	char* ret = NULL;
+
+	LOCATION_PREFERENCE_NULL_ARG_CHECK(service);
+	LOCATION_PREFERENCE_NULL_ARG_CHECK(maps_key);
+
+	object = LOCATION_PREFERENCE_GET_LOCATION_OBJECT(service);
+	pref = location_map_get_service_pref(object);
+	LOCATIONS_CHECK_CONDITION(pref != NULL, LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER, "LOCATION_PREFERENCE_ERROR_INVALID_PARAMETER");
+
+	ret = location_map_pref_get_maps_key(pref);
+	if(ret != NULL)
+		*maps_key = strdup(ret);
+	else
+		*maps_key = NULL;
+
+	location_map_pref_free(pref);
+	return LOCATION_PREFERENCE_ERROR_NONE;
+
 }
