@@ -1,27 +1,26 @@
-#sbs-git:slp/api/location-manager capi-location-manager 0.1.0 d1ee09a32e8bc0e9ed48ece37c641a7393c086c5
 Name:       capi-location-manager
 Summary:    A Location Manager library in Tizen Native API
 Version: 0.1.11
 Release:    1
-Group:      System/Libraries
-License:    Apache License, Version 2.0
+Group:      Location/API
+License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
 BuildRequires:  cmake
 BuildRequires:  pkgconfig(dlog)
 BuildRequires:  pkgconfig(location)
 BuildRequires:  pkgconfig(capi-base-common)
-Requires(post): /sbin/ldconfig
-Requires(postun): /sbin/ldconfig
 
 %description
+A Location Manager library in Tizen Native API.
 
 
 %package devel
 Summary:  A Location Manager library in Tizen Native API (Development)
-Group:    TO_BE/FILLED_IN
+Group:    Location/Development
 Requires: %{name} = %{version}-%{release}
 
 %description devel
+%devel_desc
 
 
 
@@ -36,7 +35,6 @@ MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
 make %{?jobs:-j%jobs}
 
 %install
-rm -rf %{buildroot}
 %make_install
 
 %post -p /sbin/ldconfig
@@ -45,6 +43,7 @@ rm -rf %{buildroot}
 
 
 %files
+%license LICENSE
 %manifest capi-location-manager.manifest
 %{_libdir}/libcapi-location-manager.so.*
 
