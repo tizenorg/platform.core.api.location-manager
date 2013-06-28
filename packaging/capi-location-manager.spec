@@ -5,6 +5,7 @@ Release:    1
 Group:      Location/API
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
+Source1001: 	capi-location-manager.manifest
 BuildRequires:  cmake
 BuildRequires:  pkgconfig(dlog)
 BuildRequires:  pkgconfig(location)
@@ -26,6 +27,7 @@ Requires: %{name} = %{version}-%{release}
 
 %prep
 %setup -q
+cp %{SOURCE1001} .
 
 
 %build
@@ -43,11 +45,13 @@ make %{?jobs:-j%jobs}
 
 
 %files
+%manifest %{name}.manifest
 %license LICENSE
 %manifest capi-location-manager.manifest
 %{_libdir}/libcapi-location-manager.so.*
 
 %files devel
+%manifest %{name}.manifest
 %{_includedir}/location/*.h
 %{_libdir}/pkgconfig/*.pc
 %{_libdir}/libcapi-location-manager.so
