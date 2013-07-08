@@ -1,0 +1,8 @@
+Change-Id: Id798d95b06c0fab2ac22701f6cbba2778236bc36
+Code-Review+2: Ryan Ware <ware@linux.intel.com>
+Verified+1: Ryan Ware <ware@linux.intel.com>
+Submitted-by: Ryan Ware <ware@linux.intel.com>
+Submitted-at: Mon, 08 Jul 2013 10:06:53 -0700
+Reviewed-on: https://review.tizen.org/gerrit/4527
+Project: platform/core/api/location-manager
+Branch: refs/heads/tizen
