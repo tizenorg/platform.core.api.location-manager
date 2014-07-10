@@ -1,19 +1,18 @@
 Name:       capi-location-manager
 Summary:    A Location Manager library in Tizen Native API
-Version: 0.1.11
-Release:    1
+Version:    0.1.11
+Release:    0
 Group:      Location/API
 License:    Apache-2.0
 Source0:    %{name}-%{version}.tar.gz
-Source1001: 	capi-location-manager.manifest
+Source1001:     capi-location-manager.manifest
 BuildRequires:  cmake
 BuildRequires:  pkgconfig(dlog)
 BuildRequires:  pkgconfig(location)
 BuildRequires:  pkgconfig(capi-base-common)
 
 %description
-A Location Manager library in Tizen Native API.
-
+A Location Manager library in Tizen Native API package.
 
 %package devel
 Summary:  A Location Manager library in Tizen Native API (Development)
@@ -21,20 +20,17 @@ Group:    Location/Development
 Requires: %{name} = %{version}-%{release}
 
 %description devel
+A Location Manager library in Tizen Native API (Development) package.
 %devel_desc
-
-
 
 %prep
 %setup -q
 cp %{SOURCE1001} .
 
-
 %build
 MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
 %cmake . -DFULLVER=%{version} -DMAJORVER=${MAJORVER}
-
-make %{?jobs:-j%jobs}
+%__make %{?jobs:-j%jobs}
 
 %install
 %make_install
@@ -43,11 +39,9 @@ make %{?jobs:-j%jobs}
 
 %postun -p /sbin/ldconfig
 
-
 %files
 %manifest %{name}.manifest
 %license LICENSE
-%manifest capi-location-manager.manifest
 %{_libdir}/libcapi-location-manager.so.*
 
 %files devel
@@ -55,5 +49,3 @@ make %{?jobs:-j%jobs}
 %{_includedir}/location/*.h
 %{_libdir}/pkgconfig/*.pc
 %{_libdir}/libcapi-location-manager.so
-
-
