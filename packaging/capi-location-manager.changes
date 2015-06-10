@@ -1,3 +1,497 @@
+[Version]	capi-location-manager_0.6.0
+[Date]		29 May 2015
+[Title] 	[ACR-225][2.4][location-manager][Add] Turn Location setting on or off; enum LOCATIONS_SERVICE_HOST_SETTING_OFF was deleted.
+[Developer]	Young-Ae Kang <youngae.kang@samsung.com>
+
+================================================================================
+
+
+[Version]	capi-location-manager_0.5.2
+[Date]		17 Apr 2015
+[Title]		Fixed the bug of gps_status_get_nmea().
+[Developer]	Young-Ae Kang <youngae.kang@samsung.com>
+
+================================================================================
+
+[Version]	capi-location-manager_0.5.1
+[Date]		14 Apr 2015
+[Title]		Added to support LOCATIONS_ERROR_NOT_SUPPORTED
+[Developer]	Kyoungjun Sung <kj7.sung@samsung.com>
+
+================================================================================
+
+[Version]	capi-location-manager_0.5.0
+[Date]		12 Mar 2015
+[Title]		Added location_changed_cb
+[New API]	location_changed_cb
+			location_manager_set_location_changed_cb
+			location_manager_unset_location_changed_cb
+			location_manager_set_distance_based_location_changed_cb
+			location_manager_unset_distance_based_location_changed_cb
+[Developer]	Kyoungjun Sung <kj7.sung@samsung.com>
+
+================================================================================
+
+[Version]	capi-location-manager_0.4.0
+[Date]		17 Aug 2014
+[Title]		Support multi profile build
+[New API]	Internal batch API
+			Added error types
+[Developer]	Kyoungjun Sung <kj7.sung@samsung.com>
+
+================================================================================
+
+[Version] capi-location-manager_0.3.1
+[date] 17 Aug 2014
+[Title] Added check condition of location-manager's method to avoid crash issue.(zone-in,zone-out signal)
+[Issue#] P140816-02326
+[Problem] NA
+[Cause] NA
+[Solution] check condition of location-manager's method.
+[Developer] Youngho Jeon <ykernel.jeon@samsung.com>
+
+================================================================================
+
+[Version] capi-location-manager_0.3.0
+[date] 12 Aug 2014
+[Title] add getter API of location setting
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] NA
+[Developer] Youngho Jeon <ykernel.jeon@samsung.com>
+
+================================================================================
+
+[Version] capi-location-manager_0.2.6
+[date] 17 Apr 2014
+[Title] Modify typo, location_preference_foreach_available_country_codes
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] NA
+[Developer] Minjune Kim <sena06.kim@samsung.com>
+
+================================================================================
+
+[Version] capi-location-manager_0.2.5
+[date] 16 Jan 2014
+[Title] Move geofence into libslp-location
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] NA
+[Developer] Kartika Sharma <s.kartika@samsung.com>
+
+================================================================================
+
+[Version] capi-location-manager_0.2.4
+[date] 30 Dec 2013
+[Title] Requirement: Add consent popup
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] API added to just show the consent popup
+[Developer] Kartika Sharma <s.kartika@samsung.com>
+
+================================================================================
+
+[Version] capi-location-manager_0.2.3
+[date] 9 Nov 2013
+[Title] Dont update satellite_cb to application before gps_status_satellite_cb is set
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] NA
+[Developer] Genie Kim <daejins.kim@samsung.com>
+
+================================================================================
+
+[Version] capi-location-manager_0.2.2-1
+[date] 26 Sep 2013
+[Title] Add description(reference guide) and TC for geofence service
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] NA
+[Developer] Genie Kim <daejins.kim@samsung.com>
+
+================================================================================
+
+[Version] capi-location-manager_0.2.1-1
+[date] 24 Sep 2013
+[Title] Add direction parameter of location_manager_get_location in location_product.h
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] NA
+[Developer] Genie Kim <daejins.kim@samsung.com>
+
+================================================================================
+
+[Version] capi-location-manager_0.2.0-1
+[date] 22 August 2013
+[Title] Support geofence
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] NA
+[Developer] Genie Kim <daejins.kim@samsung.com>
+
+================================================================================
+
+[Version] capi-location-manager_0.1.14-1
+[date] 1 July 2013
+[Title] add collectrion state callback in location_product.c
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] NA
+[Developer] Genie Kim <daejins.kim@samsung.com>
+
+================================================================================
+
+[Version] capi-location-manager_0.1.13-1
+[date] 27 June 2013
+[Title] Remove the duplicated signal connections/disconnections which make abort message.
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] NA
+[Developer] Minjune Kim <sena06.kim@samsung.com>
+
+================================================================================
+
+[Version] capi-location-manager_0.1.12-1
+[date] 31 May 2013
+[Title] Altitude can have nonpositive value
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] NA
+[Developer] Genie Kim <daejins.kim@samsung.com>
+
+================================================================================ 
+
+[Version] capi-location-manager_0.1.11-1
+[date] 17 Apr 2013
+[Title] Set an account key / Support Geofence method
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] Set an account key
+[Developer] Minjune Kim <sena06.kim@samsung.com>
+
+================================================================================ 
+
+[Version] capi-location-manager_0.1.10-1
+[date] 21 Feb 2013
+[Title] Add to get position_ext
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] Add to get position_ext
+[Developer] Minjune Kim <sena06.kim@samsung.com>
+
+================================================================================ 
+
+[Version] capi-location-manager_0.1.9-1
+[date] 6 Feb 2013
+[Title] add signal id of each g_signal & include time.h to fix build break
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] NA
+[Developer] Genie Kim <daejins.kim@samsung.com>
+
+================================================================================ 
+
+[Version] capi-location-manager_0.1.8-1
+[date] 24 Jan 2013
+[Title] change boilerplate
+[Issue#] NA
+[Problem] NA
+[Cause] NA
+[Solution] change boilerplate
+[Developer] Genie Kim <daejins.kim@samsung.com>
+
+================================================================================ 
+
 * Fri May 31 2013 Anas Nashif <anas.nashif@intel.com> accepted/tizen/20130520.100703@f7a18ab
 - Remove placeholders and cleanup spec
+
+capi-location-manager (0.1.7-1) precise; urgency=low
+
+  * Change Dlog Format
+  * Tag: capi-location-manager_0.1.7-1
+
+ -- Ming Zhu <mingwu.zhu@samsung.com>  Fri, 28 Dec 2012 19:10:57 +0900
+ 
+capi-location-manager (0.1.6-1) precise; urgency=low
+
+  * get accessibility from process not location manager handle
+  * Tag: capi-location-manager_0.1.-1
+
+ -- Genie Kim <daejins.kim@samsung.com>  Wed, 26 Dec 2012 11:10:57 +0900
+
+capi-location-manager (0.1.5-1) unstable; urgency=low
+
+  * Support the boundary state changed callback
+  * Tag: capi-location-manager_0.1.5-1
+
+ -- Genie Kim <daejins.kim@samsung.com>  Tue, 27 Nov 2012 22:37:13 +0900
+
+capi-location-manager (0.1.4-1) unstable; urgency=low
+
+  * 1. Extends error code 2. Support to check accessibility state 3. changes prototype of location_zone_changed_cb() 4. Add available country code APIs
+  * Tag: capi-location-manager_0.1.4-1
+
+ -- Minjune Kim <sena06.kim@samsung.com>  Wed, 21 Nov 2012 11:02:55 +0900
+
+capi-location-manager (0.1.3-1) unstable; urgency=low
+
+  * Check NULL at location_manager_get_accuracy
+  * Tag: capi-location-manager_0.1.3-1
+
+ -- Minjune Kim <sena06.kim@samsung.com>  Tue, 18 Sep 2012 22:22:46 +0900
+
+capi-location-manager (0.1.2-1) unstable; urgency=low
+
+  * Add location_manager_get_distance, location_preference_get_country_code and location_preference_set_country_code
+  * Tag: capi-location-manager_0.1.2-1
+
+ -- Minjune Kim <sena06.kim@samsung.com>  Mon, 20 Aug 2012 17:03:51 +0900
+
+capi-location-manager (0.1.1-2) unstable; urgency=low
+
+  * Change the type of a parameter in location_manager_get_velocity and location_manager_get_last_velocity from int to double.
+  * Tag: capi-location-manager_0.1.1-2
+
+ -- Minjune Kim <sena06.kim@samsung.com>  Mon, 13 Aug 2012 16:42:03 +0900
+
+capi-location-manager (0.1.1-1) unstable; urgency=low
+
+  * Support to muliple provider
+  * Tag: capi-location-manager_0.1.1-1
+
+ -- Minjune Kim <sena06.kim@samsung.com>  Wed, 01 Aug 2012 10:29:48 +0900
+
+capi-location-manager (0.1.0-26) unstable; urgency=low
+
+  * Seperate map service from location service
+  * Tag: capi-location-manager_0.1.0-26
+
+ -- Minjune Kim <sena06.kim@samsung.com>  Fri, 27 Jul 2012 20:11:48 +0900
+
+capi-location-manager (0.1.0-25) unstable; urgency=low
+
+  * Support developer mode
+  * Tag: capi-location-manager_0.1.0-25
+
+ -- Minjune Kim <sena06.kim@samsung.com>  Thu, 19 Jul 2012 19:58:47 +0900
+
+capi-location-manager (0.1.0-24) unstable; urgency=low
+
+  * Add the env variable, LOCATION_TEST_ENABLE
+  * Tag: capi-location-manager_0.1.0-24
+
+ -- Minjune Kim <sena06.kim@samsung.com>  Fri, 13 Jul 2012 13:50:04 +0900
+
+capi-location-manager (0.1.0-23) unstable; urgency=low
+
+  * Apply to the grammar check for locatoin_bounds_contains_coordinates()
+  * Tag: capi-location-manager_0.1.0-23
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Tue, 26 Jun 2012 22:36:13 +0900
+
+capi-location-manager (0.1.0-22) unstable; urgency=low
+
+  * Support LOCATION_METHOD_CPS & Remove LOCATIONS_METHOD_SPS
+  * Tag: capi-location-manager_0.1.0-22
+
+ -- Minjune Kim <sena06.kim@samsung.com>  Fri, 25 May 2012 20:21:07 +0900
+
+capi-location-manager (0.1.0-21) unstable; urgency=low
+
+  * Support the satellte information updates
+  * LOCATION_METHOD_SPS is not supported.
+  * Tag: capi-location-manager_0.1.0-21
+
+ -- Minjune Kim <sena06.kim@samsung.com>  Wed, 16 May 2012 12:32:07 +0900
+
+capi-location-manager (0.1.0-20) unstable; urgency=low
+
+  * Fix a bug that getting satellite was failed when a method was hybrid.
+  * Tag: capi-location-manager_0.1.0-20
+
+ -- Minjune Kim <sena06.kim@samsung.com>  Wed, 09 May 2012 10:06:03 +0900
+
+capi-location-manager (0.1.0-19) unstable; urgency=low
+
+  * Resolve Gcc 4.6 warning
+  * Tag: capi-location-manager_0.1.0-19
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Fri, 20 Apr 2012 17:54:51 +0900
+
+capi-location-manager (0.1.0-18) unstable; urgency=low
+
+  * Fix return value for location_bounds_is_contains_coordinates()
+  * Tag: capi-location-manager_0.1.0-18
+
+ -- Minjune Kim <sena06.kim@samsung.com>  Tue, 03 Apr 2012 11:24:16 +0900
+
+capi-location-manager (0.1.0-17) unstable; urgency=low
+
+  * fixed TC results
+  * Tag: capi-location-manager_0.1.0-17
+
+ -- Genie Kim <daejins.kim@samsung.com>  Thu, 22 Mar 2012 17:22:01 +0900
+
+capi-location-manager (0.1.0-16) unstable; urgency=low
+
+  * Correct bugs in location preference
+  * Tag: capi-location-manager_0.1.0-16 
+
+ -- ByungWoo Lee <bw1212.lee@samsung.com>  Tue, 20 Mar 2012 21:02:48 +0900
+
+capi-location-manager (0.1.0-15) unstable; urgency=low
+
+  * Add location preference
+  * Tag: capi-location-manager_0.1.0-15
+
+ -- ByungWoo Lee <bw1212.lee@samsung.com>  Mon, 19 Mar 2012 19:37:00 +0900
+
+capi-location-manager (0.1.0-14) unstable; urgency=low
+
+  * change gps_status_get_satellite functions 
+  * Tag: capi-location-manager_0.1.0-14
+
+ -- Genie Kim <daejins.kim@samsung.com>  Wed, 14 Mar 2012 20:41:44 +0900
+
+capi-location-manager (0.1.0-13) unstable; urgency=low
+
+  * Remove the unneccesary structure (location_bounds_s)
+  * Tag: capi-location-manager_0.1.0-13
+ 
+ -- Kangho Hur <kangho.hur@samsung.com>  Tue, 13 Mar 2012 16:03:12 +0900
+
+capi-location-manager (0.1.0-12) unstable; urgency=low
+
+  * Add the last position, velocity, accuracy and satellite
+  * Tag: capi-location-manager_0.1.0-12
+
+ -- Genie Kim <daejins.kim@samsung.com>  Thu, 08 Mar 2012 14:56:28 +0900
+
+capi-location-manager (0.1.0-11) unstable; urgency=low
+
+  * Support to multiple boundaries
+  * Tag: capi-location-manager_0.1.0-11
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Tue, 06 Mar 2012 20:21:26 +0900
+
+capi-location-manager (0.1.0-10) unstable; urgency=low
+
+  * Add the location_bounds.
+  * Tag: capi-location-manager_0.1.0-10 
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Fri, 02 Mar 2012 20:52:01 +0900
+
+capi-location-manager (0.1.0-9) unstable; urgency=low
+
+  * Use 'static' to local function which is limited to the current source file.
+  * Tag: capi-location-manager_0.1.0-9 
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Tue, 21 Feb 2012 10:11:16 +0900
+
+capi-location-manager (0.1.0-8) unstable; urgency=low
+
+  * Apply the SOVERSION
+  * Tag: capi-location-manager_0.1.0-8 
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Tue, 14 Feb 2012 17:53:09 +0900
+
+capi-location-manager (0.1.0-7) unstable; urgency=low
+
+  * Add the location_manager_get_last_known_position(), location_manager_is_supported_method(), and interval setting.
+  * Tag: capi-location-manager_0.1.0-7
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Thu, 26 Jan 2012 20:08:56 +0900
+
+capi-location-manager (0.1.0-6) unstable; urgency=low
+
+  * Apply Location Boundary changes
+  * Tag: capi-location-manager_0.1.0-6
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Wed, 07 Dec 2011 11:44:27 +0900
+
+capi-location-manager (0.1.0-5) unstable; urgency=low
+
+  * Changes the value of ERROR_NONE
+  * Tag: capi-location-manager_0.1.0-5
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Mon, 05 Dec 2011 11:18:34 +0900
+
+capi-location-manager (0.1.0-4) unstable; urgency=low
+
+  * Apply the Tizen
+  * Tag: capi-location-manager_0.1.0-4
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Wed, 23 Nov 2011 15:09:01 +0900
+
+capi-location-manager (0.1.0-3) unstable; urgency=low
+
+  * Repackage for SDK
+  * Tag: capi-location-manager_0.1.0-3 
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Mon, 07 Nov 2011 21:40:30 +0900
+
+capi-location-manager (0.1.0-2) unstable; urgency=low
+
+  * Apply the error messages
+  * Tag: capi-location-manager_0.1.0-2 
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Fri, 07 Oct 2011 13:28:33 +0900
+
+capi-location-manager (0.1.0-1) unstable; urgency=low
+
+  * Alpha Release
+  * Tag: capi-location-manager_0.1.0-1 
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Tue, 27 Sep 2011 20:03:39 +0900
+
+capi-location-manager (0.0.1-5) unstable; urgency=low
+
+  * Add the location_manager_is_boundary_contains_coordinate()
+  * Tag: capi-location-manager_0.0.1-5
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Mon, 26 Sep 2011 19:41:49 +0900
+
+capi-location-manager (0.0.1-4) unstable; urgency=low
+
+  * gps_status_get_used_satellite_count() API name changes.
+  * Tag: capi-location-manager_0.0.1-4
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Fri, 09 Sep 2011 16:58:25 +0900
+
+capi-location-manager (0.0.1-3) unstable; urgency=low
+
+  * Remove IPS, CPS location method type
+  * Tag: capi-location-manager_0.0.1-3
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Mon, 05 Sep 2011 14:19:50 +0900
+
+capi-location-manager (0.0.1-2) unstable; urgency=low
+
+  * Rename the callback prototype
+  * Tag: capi-location-manager_0.0.1-2
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Mon, 08 Aug 2011 10:15:11 +0900
+
+capi-location-manager (0.0.1-1) unstable; urgency=low
+
+  * Initial Upload
+  * Tag: capi-location-manager_0.0.1-1
+
+ -- Kangho Hur <kangho.hur@samsung.com>  Thu, 04 Aug 2011 16:51:02 +0900
+
 
