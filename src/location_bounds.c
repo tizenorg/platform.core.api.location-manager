@@ -160,7 +160,10 @@ EXPORT_API int location_bounds_create_polygon(location_coords_s *coords_list, in
 		}
 		position = location_position_new(0, coords_list[i].latitude, coords_list[i].longitude, 0.0, LOCATION_STATUS_2D_FIX);
 		position_list = g_list_append(position_list, position);
+
+		/* We should not remove position
 		location_position_free(position);
+		*/
 		isValid = TRUE;
 	}
 
@@ -195,6 +198,7 @@ EXPORT_API int location_bounds_create_polygon(location_coords_s *coords_list, in
 			return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
 		}
 	}
+
 	handle->user_cb = NULL;
 	handle->user_data = NULL;
 

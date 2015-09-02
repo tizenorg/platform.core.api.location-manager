@@ -40,7 +40,7 @@ export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 
 MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
 #cmake . -DCMAKE_INSTALL_PREFIX=/usr -DFULLVER=%{version} -DMAJORVER=${MAJORVER} \
-cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DBUILD_PKGTYPE=rpm -DLIBDIR=%{_libdir} -DINCLUDEDIR=%{_includedir} \
+cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DLIBDIR=%{_libdir} -DINCLUDEDIR=%{_includedir} \
 -DFULLVER=%{version} -DMAJORVER=${MAJORVER} \
 
 make %{?jobs:-j%jobs}
@@ -78,6 +78,6 @@ Test application of Location Manager
 
 %files test
 %manifest test/capi-location-manager-test.manifest
-/etc/smack/accesses.d/capi-location-manager-test.efl
+/usr/share/packages/capi-location-manager-test.xml
 /opt/usr/devel/location/location_test
 %endif
