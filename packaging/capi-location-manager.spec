@@ -1,17 +1,17 @@
-Name:		capi-location-manager
-Summary:	A Location Manager library in Tizen Native API
-Version:	0.6.1
-Release:	1
-Group:		Location/API
-License:	Apache-2.0
-Source0:	%{name}-%{version}.tar.gz
+Name: capi-location-manager
+Summary: A Location Manager library in Tizen Native API
+Version: 0.6.3
+Release: 1
+Group: Location/API
+License: Apache-2.0
+Source0: %{name}-%{version}.tar.gz
 Source1001: %{name}.manifest
-BuildRequires:  cmake
-BuildRequires:  pkgconfig(dlog)
-BuildRequires:  pkgconfig(lbs-location)
-BuildRequires:  pkgconfig(capi-base-common)
-BuildRequires:  pkgconfig(capi-system-info)
-BuildRequires:  pkgconfig(vconf)
+BuildRequires: cmake
+BuildRequires: pkgconfig(dlog)
+BuildRequires: pkgconfig(lbs-location)
+BuildRequires: pkgconfig(capi-base-common)
+BuildRequires: pkgconfig(capi-system-info)
+BuildRequires: pkgconfig(vconf)
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 
@@ -39,7 +39,6 @@ export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
 export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 
 MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
-#cmake . -DCMAKE_INSTALL_PREFIX=/usr -DFULLVER=%{version} -DMAJORVER=${MAJORVER} \
 cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DLIBDIR=%{_libdir} -DINCLUDEDIR=%{_includedir} \
 -DFULLVER=%{version} -DMAJORVER=${MAJORVER} \
 

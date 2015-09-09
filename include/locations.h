@@ -39,7 +39,7 @@ typedef enum {
 	LOCATIONS_ERROR_NONE						= TIZEN_ERROR_NONE,						/**< Successful */
 	LOCATIONS_ERROR_OUT_OF_MEMORY				= TIZEN_ERROR_OUT_OF_MEMORY,			/**< Out of memory */
 	LOCATIONS_ERROR_INVALID_PARAMETER			= TIZEN_ERROR_INVALID_PARAMETER,		/**< Invalid parameter */
-	LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED 	= TIZEN_ERROR_PERMISSION_DENIED,		/**< Permission denied */
+	LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED	= TIZEN_ERROR_PERMISSION_DENIED,		/**< Permission denied */
 	LOCATIONS_ERROR_NOT_SUPPORTED				= TIZEN_ERROR_NOT_SUPPORTED,			/**< Not supported */
 	LOCATIONS_ERROR_INCORRECT_METHOD			= TIZEN_ERROR_LOCATION_MANAGER | 0x01,	/**< Location manager contains incorrect method for a given call */
 	LOCATIONS_ERROR_NETWORK_FAILED				= TIZEN_ERROR_LOCATION_MANAGER | 0x02,	/**< Network unavailable */
@@ -54,10 +54,10 @@ typedef enum {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-    LOCATIONS_METHOD_NONE = -1,	/**< Undefined method */
-    LOCATIONS_METHOD_HYBRID,	/**< This method selects the best method available at the moment */
-    LOCATIONS_METHOD_GPS,		/**< This method uses Global Positioning System */
-    LOCATIONS_METHOD_WPS,		/**< This method uses WiFi Positioning System */
+	LOCATIONS_METHOD_NONE = -1,	/**< Undefined method */
+	LOCATIONS_METHOD_HYBRID,	/**< This method selects the best method available at the moment */
+	LOCATIONS_METHOD_GPS,		/**< This method uses Global Positioning System */
+	LOCATIONS_METHOD_WPS,		/**< This method uses WiFi Positioning System */
 } location_method_e;
 
 /**
@@ -65,13 +65,13 @@ typedef enum {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-    LOCATIONS_ACCURACY_NONE = 0,	/**< Invalid data */
-    LOCATIONS_ACCURACY_COUNTRY,		/**< Country accuracy level */
-    LOCATIONS_ACCURACY_REGION,		/**< Regional accuracy level */
-    LOCATIONS_ACCURACY_LOCALITY,	/**< Local accuracy level */
-    LOCATIONS_ACCURACY_POSTALCODE,	/**< Postal accuracy level */
-    LOCATIONS_ACCURACY_STREET,		/**< Street accuracy level */
-    LOCATIONS_ACCURACY_DETAILED,	/**< Detailed accuracy level */
+	LOCATIONS_ACCURACY_NONE = 0,	/**< Invalid data */
+	LOCATIONS_ACCURACY_COUNTRY,		/**< Country accuracy level */
+	LOCATIONS_ACCURACY_REGION,		/**< Regional accuracy level */
+	LOCATIONS_ACCURACY_LOCALITY,	/**< Local accuracy level */
+	LOCATIONS_ACCURACY_POSTALCODE,	/**< Postal accuracy level */
+	LOCATIONS_ACCURACY_STREET,		/**< Street accuracy level */
+	LOCATIONS_ACCURACY_DETAILED,	/**< Detailed accuracy level */
 } location_accuracy_level_e;
 
 /**
@@ -79,8 +79,8 @@ typedef enum {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-    LOCATIONS_SERVICE_DISABLED,			/**< Service is disabled */
-    LOCATIONS_SERVICE_ENABLED,			/**< Service is enabled */
+	LOCATIONS_SERVICE_DISABLED,			/**< Service is disabled */
+	LOCATIONS_SERVICE_ENABLED,			/**< Service is enabled */
 } location_service_state_e;
 
 /**
@@ -88,9 +88,9 @@ typedef enum {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-    LOCATIONS_ACCESS_STATE_NONE,		/**< Access state is not determined */
-    LOCATIONS_ACCESS_STATE_DENIED,		/**< Access denied */
-    LOCATIONS_ACCESS_STATE_ALLOWED,		/**< Access authorized */
+	LOCATIONS_ACCESS_STATE_NONE,		/**< Access state is not determined */
+	LOCATIONS_ACCESS_STATE_DENIED,		/**< Access denied */
+	LOCATIONS_ACCESS_STATE_ALLOWED,		/**< Access authorized */
 } location_accessibility_state_e;
 
 /**
@@ -259,12 +259,12 @@ int location_manager_is_enabled_method(location_method_e method, bool *enable);
  * @since_tizen 2.3.1
  * @privlevel platform
  * @privilege %http://tizen.org/privilege/location.enable
- * @param[in] method        The location method to be checked
- * @param[in] enable        The value to set
+ * @param[in] method		The location method to be checked
+ * @param[in] enable		The value to set
  * @return 0 on success, otherwise a negative error value
  * @retval #LOCATIONS_ERROR_NONE Successful
  * @retval #LOCATIONS_ERROR_INCORRECT_METHOD Incorrect method
- * @retval #LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED  Permission denied
+ * @retval #LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED Permission denied
  * @retval #LOCATIONS_ERROR_NOT_SUPPORTED	Not supported
  * @see location_manager_is_enabled_method()
  * @see location_manager_create()
@@ -915,9 +915,8 @@ typedef void(*gps_status_satellite_updated_cb)(int num_of_active, int num_of_inv
  * @return @c 0 on success, otherwise a negative error value
  * @retval #LOCATIONS_ERROR_NONE					Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER		Invalid argument
- * @retval #LOCATIONS_ERROR_INCORRECT_METHOD		Incorrect method
  * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE	Service not available
- * @retval #LOCATIONS_ERROR_OUT_OF_MEMORY			Out of memory
+ * @retval #LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED The application does not have the privilege to call this method
  * @retval #LOCATIONS_ERROR_NOT_SUPPORTED			Not supported
  * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start()
  * @see location_manager_start()
@@ -937,7 +936,6 @@ int gps_status_get_nmea(location_manager_h manager, char **nmea);
  * @return @c 0 on success, otherwise a negative error value
  * @retval #LOCATIONS_ERROR_NONE					Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER		Invalid argument
- * @retval #LOCATIONS_ERROR_INCORRECT_METHOD		Incorrect method
  * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE	Service not available
  * @retval #LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED The application does not have the privilege to call this method
  * @retval #LOCATIONS_ERROR_NOT_SUPPORTED			Not supported

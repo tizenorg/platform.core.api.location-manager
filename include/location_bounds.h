@@ -44,12 +44,12 @@ typedef struct {
  * @brief Enumeration for error code for Location manager.
  */
 typedef enum {
-    LOCATION_BOUNDS_ERROR_NONE = TIZEN_ERROR_NONE,								/**< Successful */
-    LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY = TIZEN_ERROR_OUT_OF_MEMORY,			/**< Out of memory */
-    LOCATION_BOUNDS_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER,	/**< Invalid parameter */
-    LOCATION_BOUNDS_ERROR_NOT_SUPPORTED = TIZEN_ERROR_NOT_SUPPORTED,			/**< Not supported */
-    LOCATION_BOUNDS_ERROR_INCORRECT_TYPE = LOCATION_BOUNDS_ERROR_CLASS | 0x01,	/**< Incorrect bounds type for a given call */
-    LOCATION_BOUNDS_ERROR_IS_ADDED = LOCATION_BOUNDS_ERROR_CLASS | 0x02,		/**< Cannot remove bounds handle from location manager */
+	LOCATION_BOUNDS_ERROR_NONE = TIZEN_ERROR_NONE,								/**< Successful */
+	LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY = TIZEN_ERROR_OUT_OF_MEMORY,			/**< Out of memory */
+	LOCATION_BOUNDS_ERROR_INVALID_PARAMETER = TIZEN_ERROR_INVALID_PARAMETER,	/**< Invalid parameter */
+	LOCATION_BOUNDS_ERROR_NOT_SUPPORTED = TIZEN_ERROR_NOT_SUPPORTED,			/**< Not supported */
+	LOCATION_BOUNDS_ERROR_INCORRECT_TYPE = LOCATION_BOUNDS_ERROR_CLASS | 0x01,	/**< Incorrect bounds type for a given call */
+	LOCATION_BOUNDS_ERROR_IS_ADDED = LOCATION_BOUNDS_ERROR_CLASS | 0x02,		/**< Cannot remove bounds handle from location manager */
 } location_bound_error_e;
 
 /**
@@ -57,9 +57,9 @@ typedef enum {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-    LOCATION_BOUNDS_RECT = 1,		/**< Rectangular geographical area type. */
-    LOCATION_BOUNDS_CIRCLE,			/**< Circle geographical area type.. */
-    LOCATION_BOUNDS_POLYGON,		/**< Polygon geographical area type.. */
+	LOCATION_BOUNDS_RECT = 1,		/**< Rectangular geographical area type. */
+	LOCATION_BOUNDS_CIRCLE,			/**< Circle geographical area type.. */
+	LOCATION_BOUNDS_POLYGON,		/**< Polygon geographical area type.. */
 } location_bounds_type_e;
 
 /**
@@ -67,8 +67,8 @@ typedef enum {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-    LOCATIONS_BOUNDARY_IN,			/**< Boundary In (Zone In) */
-    LOCATIONS_BOUNDARY_OUT			/**< Boundary Out (Zone Out) */
+	LOCATIONS_BOUNDARY_IN,			/**< Boundary In (Zone In) */
+	LOCATIONS_BOUNDARY_OUT			/**< Boundary Out (Zone Out) */
 } location_boundary_state_e;
 
 /**

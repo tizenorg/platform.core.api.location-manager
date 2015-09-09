@@ -57,10 +57,10 @@ extern "C" {
 
 #define LOCATIONS_NULL_ARG_CHECK(arg)	\
 	LOCATIONS_CHECK_CONDITION((arg != NULL),LOCATION_BOUNDS_ERROR_INVALID_PARAMETER,"LOCATION_BOUNDS_ERROR_INVALID_PARAMETER") \
-	 
+
 #define LOCATIONS_NOT_SUPPORTED_CHECK(arg)	\
 	LOCATIONS_CHECK_CONDITION((arg == LOCATIONS_ERROR_NONE),LOCATIONS_ERROR_NOT_SUPPORTED,"LOCATIONS_ERROR_NOT_SUPPORTED") \
-	 
+
 typedef enum {
 	_LOCATIONS_EVENT_TYPE_SERVICE_STATE,
 	_LOCATIONS_EVENT_TYPE_POSITION,
@@ -74,19 +74,18 @@ typedef enum {
 	_LOCATIONS_EVENT_TYPE_DISTANCE,
 	_LOCATIONS_EVENT_TYPE_POS_VEL,
 	_LOCATIONS_EVENT_TYPE_NUM
-}
-_location_event_e;
+} _location_event_e;
 
 typedef enum {
-    _LOCATION_SIGNAL_SERVICE_ENABLED,
-    _LOCATION_SIGNAL_SERVICE_DISABLED,
-    _LOCATION_SIGNAL_SERVICE_UPDATED,
-    _LOCATION_SIGNAL_ZONE_IN,
-    _LOCATION_SIGNAL_ZONE_OUT,
-    _LOCATION_SIGNAL_LOCATION_UPDATED,
-    _LOCATION_SIGNAL_BATCH_UPDATED,
-    _LOCATION_SIGNAL_ERROR_EMITTED,
-    _LOCATION_SIGNAL_NUM
+	_LOCATION_SIGNAL_SERVICE_ENABLED,
+	_LOCATION_SIGNAL_SERVICE_DISABLED,
+	_LOCATION_SIGNAL_SERVICE_UPDATED,
+	_LOCATION_SIGNAL_ZONE_IN,
+	_LOCATION_SIGNAL_ZONE_OUT,
+	_LOCATION_SIGNAL_LOCATION_UPDATED,
+	_LOCATION_SIGNAL_BATCH_UPDATED,
+	_LOCATION_SIGNAL_ERROR_EMITTED,
+	_LOCATION_SIGNAL_NUM
 } _location_signal_e;
 
 typedef struct _location_manager_s {
@@ -118,6 +117,7 @@ typedef struct _location_setting_changed_s {
 */
 int __convert_error_code(int code);
 int __is_gps_supported(void);
+int __is_gps_satellite_supported(void);
 int __is_wps_supported(void);
 int __is_location_supported(void);
 int __set_callback(_location_event_e type, location_manager_h manager, void *callback, void *user_data);

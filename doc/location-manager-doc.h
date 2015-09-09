@@ -153,10 +153,11 @@
  * This API is related with the following features:\n
  *	- http://tizen.org/feature/location\n
  *	- http://tizen.org/feature/location.gps\n
+ *	- http://tizen.org/feature/location.gps.satellite\n
  *
  * It is recommended to design feature related codes in your application for reliability.\n
  *
- * You can check if a devrice supports the related features for this API by using @ref CAPI_SYSTEM_SYSTEM_INFO_MODULE, thereby controlling the procedure of your application.\n
+ * You can check if a device supports the related features for this API by using @ref CAPI_SYSTEM_SYSTEM_INFO_MODULE, thereby controlling the procedure of your application.\n
  *
  * To ensure your application is only running on the device with specific features, please define the features in your manifest file using the manifest editor in the SDK.\n
  *
@@ -186,7 +187,7 @@
  *
  * It is recommended to design feature related codes in your application for reliability.\n
  *
- * You can check if a devrice supports the related features for this API by using @ref CAPI_SYSTEM_SYSTEM_INFO_MODULE, thereby controlling the procedure of your application.\n
+ * You can check if a device supports the related features for this API by using @ref CAPI_SYSTEM_SYSTEM_INFO_MODULE, thereby controlling the procedure of your application.\n
  *
  * To ensure your application is only running on the device with specific features, please define the features in your manifest file using the manifest editor in the SDK.\n
  *
@@ -216,7 +217,7 @@
  *
  * It is recommended to design feature related codes in your application for reliability.\n
  *
- * You can check if a devrice supports the related features for this API by using @ref CAPI_SYSTEM_SYSTEM_INFO_MODULE, thereby controlling the procedure of your application.\n
+ * You can check if a device supports the related features for this API by using @ref CAPI_SYSTEM_SYSTEM_INFO_MODULE, thereby controlling the procedure of your application.\n
  *
  * To ensure your application is only running on the device with specific features, please define the features in your manifest file using the manifest editor in the SDK.\n
  *

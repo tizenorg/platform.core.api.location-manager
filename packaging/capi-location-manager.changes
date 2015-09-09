@@ -217,9 +217,6 @@
 
 ================================================================================ 
 
-* Fri May 31 2013 Anas Nashif <anas.nashif@intel.com> accepted/tizen/20130520.100703@f7a18ab
-- Remove placeholders and cleanup spec
-
 capi-location-manager (0.1.7-1) precise; urgency=low
 
   * Change Dlog Format
@@ -493,5 +490,3 @@ capi-location-manager (0.0.1-1) unstable; urgency=low
   * Tag: capi-location-manager_0.0.1-1
 
  -- Kangho Hur <kangho.hur@samsung.com>  Thu, 04 Aug 2011 16:51:02 +0900
-
-

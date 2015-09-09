@@ -59,6 +59,16 @@ EXPORT_API int location_bounds_create_rect(location_coords_s top_left, location_
 	LOCATIONS_CHECK_CONDITION(bottom_right.latitude >= -90 && bottom_right.latitude <= 90, LOCATION_BOUNDS_ERROR_INVALID_PARAMETER, "LOCATION_BOUNDS_ERROR_INVALID_PARAMETER");
 	LOCATIONS_CHECK_CONDITION(bottom_right.longitude >= -180 && bottom_right.longitude <= 180, LOCATION_BOUNDS_ERROR_INVALID_PARAMETER, "LOCATION_BOUNDS_ERROR_INVALID_PARAMETER");
 
+	if ((bottom_right.longitude - top_left.longitude) < 180 && (bottom_right.longitude - top_left.longitude) > -180) {
+		if (bottom_right.longitude <= top_left.longitude || bottom_right.latitude >= top_left.latitude) {
+			return LOCATION_BOUNDS_ERROR_INVALID_PARAMETER;
+		}
+	} else {
+		if (bottom_right.latitude >= top_left.latitude) {
+			return LOCATION_BOUNDS_ERROR_INVALID_PARAMETER;
+		}
+	}
+
 	LocationPosition *lt = location_position_new(0, top_left.latitude, top_left.longitude, 0, LOCATION_STATUS_2D_FIX);
 	if (lt == NULL) {
 		LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY(0x%08x) : fail to location_position_new", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
@@ -90,8 +100,6 @@ EXPORT_API int location_bounds_create_rect(location_coords_s top_left, location_
 		free(handle);
 		return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
 	}
-	handle->user_cb = NULL;
-	handle->user_data = NULL;
 
 	*bounds = (location_bounds_h) handle;
 	return LOCATION_BOUNDS_ERROR_NONE;
@@ -101,7 +109,7 @@ EXPORT_API int location_bounds_create_circle(location_coords_s center, double ra
 {
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
 	LOCATIONS_NULL_ARG_CHECK(bounds);
-	LOCATIONS_CHECK_CONDITION(radius >= 0, LOCATION_BOUNDS_ERROR_INVALID_PARAMETER, "LOCATION_BOUNDS_ERROR_INVALID_PARAMETER");
+	LOCATIONS_CHECK_CONDITION(radius > 0, LOCATION_BOUNDS_ERROR_INVALID_PARAMETER, "LOCATION_BOUNDS_ERROR_INVALID_PARAMETER");
 	LOCATIONS_CHECK_CONDITION(center.latitude >= -90 && center.latitude <= 90, LOCATION_BOUNDS_ERROR_INVALID_PARAMETER, "LOCATION_BOUNDS_ERROR_INVALID_PARAMETER");
 	LOCATIONS_CHECK_CONDITION(center.longitude >= -180 && center.longitude <= 180, LOCATION_BOUNDS_ERROR_INVALID_PARAMETER, "LOCATION_BOUNDS_ERROR_INVALID_PARAMETER");
 
@@ -123,18 +131,10 @@ EXPORT_API int location_bounds_create_circle(location_coords_s center, double ra
 	handle->boundary = location_boundary_new_for_circle(ct, radius);
 	location_position_free(ct);
 	if (handle->boundary == NULL) {
-		int ret = get_last_result();
 		free(handle);
-		if (ret == LOCATION_ERROR_PARAMETER) {
-			LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_INVALID_PARAMETER(0x%08x) fail to location_boundary_new_for_circle", LOCATION_BOUNDS_ERROR_INVALID_PARAMETER);
-			return LOCATION_BOUNDS_ERROR_INVALID_PARAMETER;
-		} else {
-			LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY(0x%08x) : fail to location_boundary_new_for_circle", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
-			return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
-		}
+		LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY(0x%08x) : fail to location_boundary_new_for_circle", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
+		return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
 	}
-	handle->user_cb = NULL;
-	handle->user_data = NULL;
 
 	*bounds = (location_bounds_h) handle;
 	return LOCATION_BOUNDS_ERROR_NONE;
@@ -160,8 +160,7 @@ EXPORT_API int location_bounds_create_polygon(location_coords_s *coords_list, in
 		}
 		position = location_position_new(0, coords_list[i].latitude, coords_list[i].longitude, 0.0, LOCATION_STATUS_2D_FIX);
 		position_list = g_list_append(position_list, position);
-
-		/* We should not remove position
+		/* We should not remove position.
 		location_position_free(position);
 		*/
 		isValid = TRUE;
@@ -188,19 +187,10 @@ EXPORT_API int location_bounds_create_polygon(location_coords_s *coords_list, in
 	handle->is_added = FALSE;
 	handle->boundary = location_boundary_new_for_polygon(position_list);
 	if (handle->boundary == NULL) {
-		int ret = get_last_result();
 		free(handle);
-		if (ret == LOCATION_ERROR_PARAMETER) {
-			LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_INVALID_PARAMETER(0x%08x) fail to location_boundary_new_for_polygon", LOCATION_BOUNDS_ERROR_INVALID_PARAMETER);
-			return LOCATION_BOUNDS_ERROR_INVALID_PARAMETER;
-		} else {
-			LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY(0x%08x) : fail to location_boundary_new_for_polygon", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
-			return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
-		}
+		LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY(0x%08x) : fail to location_boundary_new_for_polygon", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
+		return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
 	}
-
-	handle->user_cb = NULL;
-	handle->user_data = NULL;
 
 	*bounds = (location_bounds_h) handle;
 	return LOCATION_BOUNDS_ERROR_NONE;

@@ -29,6 +29,7 @@ static int menu;
 static int repeat_count;
 static void location_cleanup();
 static int location_test();
+static guint test_timer;
 
 static gboolean exit_program(gpointer data)
 {
@@ -39,6 +40,11 @@ static gboolean exit_program(gpointer data)
 
 static gboolean wait_test()
 {
+	if (test_timer) {
+		g_source_remove(test_timer);
+		test_timer = 0;
+	}
+
 	location_cleanup();
 	location_test();
 
@@ -302,7 +308,7 @@ void _position_updated_cb(double latitude, double longitude, double altitude, ti
 	repeat_count++;
 
 	if (repeat_count > 2) {
-		g_timeout_add_seconds(1, wait_test, NULL);
+		test_timer = g_timeout_add_seconds(1, wait_test, NULL);
 	}
 }
 
@@ -318,7 +324,7 @@ void _location_cb(int error, double latitude, double longitude, double altitude,
 	printf("location_cb: lat[%f] lon[%f] alt[%f]\n", latitude, longitude, altitude);
 	printf("speed[%f] climb[%f] direction[%f]\n", speed, climb, direction);
 
-	g_timeout_add_seconds(1, wait_test, NULL);
+	test_timer = g_timeout_add_seconds(1, wait_test, NULL);
 }
 
 void _location_changed_cb(double latitude, double longitude, double altitude, double speed, double direction, double horizontal_accuracy, time_t timestamp, void *user_data)
@@ -329,7 +335,7 @@ void _location_changed_cb(double latitude, double longitude, double altitude, do
 	repeat_count++;
 
 	if (repeat_count > 2) {
-		g_timeout_add_seconds(1, wait_test, NULL);
+		test_timer = g_timeout_add_seconds(1, wait_test, NULL);
 	}
 }
 
@@ -353,7 +359,7 @@ void _location_batch_cb(int num_of_location, void *user_data)
 	repeat_count++;
 
 	if (repeat_count > 1) {
-		g_timeout_add_seconds(1, wait_test, NULL);
+		test_timer = g_timeout_add_seconds(1, wait_test, NULL);
 	}
 }
 
@@ -364,7 +370,7 @@ static void __setting_cb(location_method_e method, bool enable, void *user_data)
 
 static void print_location_status()
 {
-	printf("==== LOCATION STATUS ======\n");
+	printf("==== LOCATION Setting state =====\n");
 	bool is_enabled = FALSE;
 	location_manager_is_enabled_method(LOCATIONS_METHOD_HYBRID, &is_enabled);
 	printf("hybrid: %d, ", is_enabled);
@@ -379,20 +385,20 @@ static void print_location_status()
 static int enable_method(location_method_e method, bool enable)
 {
 	int ret = 0;
-	printf("==== LOCATION STATUS ======\n");
+	printf("==== LOCATION Setting changed =====\n");
 
 	location_manager_set_setting_changed_cb(LOCATIONS_METHOD_HYBRID, __setting_cb, NULL);
-	location_manager_set_setting_changed_cb(LOCATIONS_METHOD_GPS, __setting_cb, NULL);
-	location_manager_set_setting_changed_cb(LOCATIONS_METHOD_WPS, __setting_cb, NULL);
 
+	printf("method[%d], enable[%d]\n", method, enable);
 	ret = location_manager_enable_method(method, enable);
-	printf("method[%d]: %d\n", method, enable);
+
+	location_manager_unset_setting_changed_cb(LOCATIONS_METHOD_HYBRID);
 	return ret;
 }
 
 static void print_menu()
 {
-	printf("==== LOCATION TEST ======\n");
+	printf("============= LOCATION TEST =============\n");
 	printf("[1] Get location: LOCATIONS_METHOD_HYBRID\n");
 	printf("[2] Get location: LOCATIONS_METHOD_GPS\n");
 	printf("[3] Get location: LOCATIONS_METHOD_WPS\n");
@@ -422,30 +428,23 @@ static int location_test()
 	int ret = LOCATIONS_ERROR_NONE;
 	int basic = 0;
 	int interval = 1;
+	repeat_count = 0;
 
 	print_location_status();
 	print_menu();
 
 	switch (menu) {
 		case 1:
-			basic = 1;
-			ret = location_manager_create(LOCATIONS_METHOD_HYBRID, &manager);
-			printf("LOCATIONS_METHOD_HYBRID create: %d\n", ret);
-			ret = location_manager_start(manager);
-			printf("start: %d\n", ret);
-			break;
 		case 2:
+		case 3: {
 			basic = 1;
-			ret = location_manager_create(LOCATIONS_METHOD_GPS, &manager);
-			printf("LOCATIONS_METHOD_GPS create: %d\n", ret);
+
+			int method = menu - 1;
+			ret = location_manager_create(method, &manager);
+			printf("location_manager_create (method: %d): %d\n", method, ret);
 			ret = location_manager_start(manager);
 			printf("start: %d\n", ret);
-			break;
-		case 3:
-			basic = 1;
-			ret = location_manager_create(LOCATIONS_METHOD_WPS, &manager);
-			ret = location_manager_start(manager);
-			printf("start: %d\n", ret);
+			}
 			break;
 		case 4:
 		case 5:
@@ -464,35 +463,33 @@ static int location_test()
 		case 11:
 		case 12:
 		case 13: {
-			repeat_count = 0;
 			int interval = 1;
 
 			printf("\n	Input position interval ==> ");
 			ret = scanf("%d", &interval);
 
-			int method = menu - 4;
+			int method = menu - 11;
 			ret = location_manager_create(method, &manager);
 			printf("location_manager_create (method: %d): %d\n", method, ret);
 
 			ret = location_manager_set_position_updated_cb(manager, _position_updated_cb, interval, (void *)manager);
-			printf("set position changed callback: %d\n", ret);
+			printf("set_position_updated_cb: %d\n", ret);
 
 			/*
 			ret = location_manager_set_velocity_updated_cb(manager, _velocity_updated_cb, interval*2, (void *)manager);
-			printf("set velocity changed callback: %d\n", ret);
+			printf("set_velocity_updated_cb: %d\n", ret);
 			*/
 
 			ret = location_manager_set_location_changed_cb(manager, _location_changed_cb, interval * 2, (void *)manager);
-			printf("set location changed callback: %d\n", ret);
+			printf("set_location_changed_cb: %d\n", ret);
 
 			ret = location_manager_start(manager);
-			repeat_count = 0;
+			printf("start: %d\n", ret);
 			break;
 			}
 		case 21:
 		case 22:
 		case 23: {
-			repeat_count = 0;
 			int interval = 1;
 			int method = menu - 21;
 
@@ -506,13 +503,13 @@ static int location_test()
 			/*printf("set position changed callback: %d\n", ret); */
 
 			ret = location_manager_set_distance_based_location_changed_cb(manager, _location_changed_cb, interval, 30, (void *)manager);
-			printf("set location changed callback: %d\n", ret);
+			printf("set_distance_based_location_changed_cb: %d\n", ret);
 
 			ret = location_manager_start(manager);
+			printf("start: %d\n", ret);
 			break;
 			}
 		case 31: {
-			repeat_count = 0;
 			int interval = 1;
 			printf("\n	Input batch interval ==> ");
 			ret = scanf("%d", &interval);
@@ -526,9 +523,10 @@ static int location_test()
 			printf("location_manager_create (method : %d)\n", LOCATIONS_METHOD_GPS);
 
 			ret = location_manager_set_location_batch_cb(manager, _location_batch_cb, interval, period, (void *)manager);
-			printf("set location batch callback: %d\n", ret);
+			printf("set_location_batch_cb: %d\n", ret);
 
 			ret = location_manager_start_batch(manager);
+			printf("start_batch: %d\n", ret);
 			break;
 			}
 		case 41:
@@ -541,7 +539,7 @@ static int location_test()
 			ret = scanf("%d", &onoff);
 
 			ret = enable_method(method, onoff);
-			printf("Enabling method[%d]: %d\n", method, ret);
+			printf("Enabling method: [%d], ret=%d\n", method, ret);
 			break;
 			}
 
@@ -563,40 +561,40 @@ static int location_test()
 			testLocationCoordinates.longitude = 12;
 			location_bound_error_e nRet = location_bounds_create_polygon(location_coord_list, nPolySize, &hPolyLocationBound);
 
-			printf("location_bounds_create_polygon= %d\n", nRet);
+			printf("location_bounds_create_polygon: %d\n", nRet);
 
 			bIsContained = location_bounds_contains_coordinates(hPolyLocationBound, testLocationCoordinates);// Target API
-			printf("bIsContained : %d\n", bIsContained);
+			printf("bIsContained: %d\n", bIsContained);
 
 			location_bounds_destroy(hPolyLocationBound);
 			break;
 			}
 		case 0:
-			g_timeout_add_seconds(0.1, exit_program, NULL);
+			g_timeout_add_seconds(1, exit_program, NULL);
 			return 0;
 		default:
 			printf("Exit!!! Input: %d\n", menu);
-			g_timeout_add_seconds(0.1, exit_program, NULL);
+			g_timeout_add_seconds(1, exit_program, NULL);
 			return 0;
 	}
 
 	if (ret != LOCATIONS_ERROR_NONE) {
 		printf("Test Failed!!! [%d]\n", ret);
-		g_timeout_add_seconds(0.1, exit_program, NULL);
+		g_timeout_add_seconds(1, exit_program, NULL);
 		return 0;
 	}
 
 	if (menu < 40) {
 		ret = location_manager_set_service_state_changed_cb(manager, _state_change_cb, (void *)manager);
-		printf("set state changed callback: %d\n", ret);
+		printf("set_service_state_changed_cb: %d\n", ret);
 
 		if (basic) {
 			ret = location_manager_set_position_updated_cb(manager, _position_updated_cb, interval, (void *)manager);
-			printf("set position changed callback: %d\n", ret);
+			printf("set_position_updated_cb: %d\n", ret);
 		}
 	}
 	else {
-		g_timeout_add_seconds(0.1, wait_test, NULL);
+		g_timeout_add_seconds(1, wait_test, NULL);
 	}
 
 	return 0;
@@ -610,17 +608,15 @@ static void location_cleanup()
 		printf("stop: %d\n", ret);
 
 		ret = location_manager_unset_service_state_changed_cb(manager);
-		printf("unset: %d\n", ret);
+		printf("unset_service_state_changed_cb: %d\n", ret);
 
 		ret = location_manager_unset_position_updated_cb(manager);
-		printf("unset: %d\n", ret);
+		printf("unset_position_updated_cb: %d\n", ret);
 
 		ret = location_manager_destroy(manager);
 		printf("destroy: %d\n", ret);
 		manager = NULL;
 	}
-	location_manager_unset_setting_changed_cb(LOCATIONS_METHOD_GPS);
-	location_manager_unset_setting_changed_cb(LOCATIONS_METHOD_WPS);
 }
 
 int main(int argc, char **argv)

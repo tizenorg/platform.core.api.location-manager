@@ -83,6 +83,21 @@ int __is_gps_supported(void)
 	return LOCATIONS_ERROR_NONE;
 }
 
+int __is_gps_satellite_supported(void)
+{
+	bool is_supported = false;
+	int retval = 0;
+
+	retval = system_info_get_platform_bool("http://tizen.org/feature/location.gps.satellite", &is_supported);
+	if (retval != SYSTEM_INFO_ERROR_NONE) {
+		LOCATIONS_LOGW("system_info_get_platform_bool failed: retval = %d", retval);
+	}
+	if (is_supported == false) {
+		return LOCATIONS_ERROR_NOT_SUPPORTED;
+	}
+	return LOCATIONS_ERROR_NONE;
+}
+
 int __is_wps_supported(void)
 {
 	bool is_supported = false;
