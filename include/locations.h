@@ -196,7 +196,7 @@ typedef void(*location_zone_changed_cb)(location_boundary_state_e state, double 
 typedef void(*location_setting_changed_cb)(location_method_e method, bool enable, void *user_data);
 
 /**
- * @brief Gets called iteratively to notify you of location bounds.
+ * @brief Called once for each location bound.
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  * @param[in] bounds		The location bounds handle
  * @param[in] user_data		The user data passed from the callback registration function
@@ -229,9 +229,9 @@ typedef void(*location_changed_cb)(double latitude, double longitude, double alt
  * @remark The specific error code can be obtained using the get_last_result() method. Error codes are described in Exception section.
  * @param[in] method The location method to be checked
  * @return @c true if the specified location method is supported, otherwise @c false if it is not available
- * @exception #LOCATIONS_ERROR_NONE Successful
- * @exception #LOCATIONS_ERROR_NOT_SUPPORTED Not supported
- * @exception #LOCATIONS_ERROR_INCORRECT_METHOD Incorrect method
+ * @retval #LOCATIONS_ERROR_NONE Successful
+ * @retval #LOCATIONS_ERROR_NOT_SUPPORTED Not supported
+ * @retval #LOCATIONS_ERROR_INCORRECT_METHOD Incorrect method
  * @see	location_manager_create()
  * @see location_manager_get_method()
  */

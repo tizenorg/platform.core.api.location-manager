@@ -217,7 +217,7 @@ int location_bounds_get_circle_coords(location_bounds_h bounds, location_coords_
  * @brief Get the coordinates of a polygon.
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  * @param[in] bounds		The location bounds handle
- * @param[in] callback		The geocoder get position callback function
+ * @param[in] callback		The iteration callback
  * @param[in] user_data		The user data to be passed to the callback function
  * @return @c 0 on success, otherwise a negative error value.
  * @retval #LOCATION_BOUNDS_ERROR_NONE Successful

@@ -56,34 +56,34 @@ void zone_event_cb(location_boundary_state_e state, double latitude, double long
                    void *user_data)
 {
 	if (state == LOCATIONS_BOUNDARY_IN) {
-		printf("Entering zone\n");
+		fprintf(stderr, "Entering zone\n");
 	} else {		/* state == LOCATIONS_BOUNDARY_OUT */
-		printf("Leaving zone\n");
+		fprintf(stderr, "Leaving zone\n");
 	}
 
-	printf("Latitude: %lf, longitude: %lf, altitude: %lf\n", latitude, longitude, altitude);
+	fprintf(stderr, "Latitude: %lf, longitude: %lf, altitude: %lf\n", latitude, longitude, altitude);
 
-	printf("Time: %s\n", ctime(&timestamp));
+	fprintf(stderr, "Time: %s\n", ctime(&timestamp));
 }
 
 static bool last_satellites_foreach_cb(unsigned int azimuth, unsigned int elevation, unsigned int prn, int snr, bool is_in_use,
                                        void *user_data)
 {
-	printf("[Last Satellite information]	azimuth	: %d, elevation: %d, prn: %d, snr: %d, used: %d\n", azimuth, elevation,
+	fprintf(stderr, "[Last Satellite information]	azimuth	: %d, elevation: %d, prn: %d, snr: %d, used: %d\n", azimuth, elevation,
 	       prn, snr, is_in_use);
 	return true;
 }
 
 static bool __poly_coords_cb(location_coords_s coords, void *user_data)
 {
-	printf("location_bounds_foreach_rect_coords(latitude: %lf, longitude: %lf) \n", coords.latitude, coords.longitude);
+	fprintf(stderr, "location_bounds_foreach_rect_coords(latitude: %lf, longitude: %lf) \n", coords.latitude, coords.longitude);
 	return TRUE;
 }
 
 static bool __location_bounds_cb(location_bounds_h bounds, void *user_data)
 {
 	if (bounds == NULL)
-		printf("bounds ==NULL\n");
+		fprintf(stderr, "bounds ==NULL\n");
 	else {
 		location_bounds_type_e type;
 		location_bounds_get_type(bounds, &type);
@@ -91,14 +91,14 @@ static bool __location_bounds_cb(location_bounds_h bounds, void *user_data)
 			location_coords_s center;
 			double radius;
 			location_bounds_get_circle_coords(bounds, &center, &radius);
-			printf("location_bounds_get_circle_coords(center: %lf, %lf, radius: %lf) \n", center.latitude,
+			fprintf(stderr, "location_bounds_get_circle_coords(center: %lf, %lf, radius: %lf) \n", center.latitude,
 			       center.longitude, radius);
 
 		} else if (type == LOCATION_BOUNDS_RECT) {
 			location_coords_s left_top;
 			location_coords_s right_bottom;
 			location_bounds_get_rect_coords(bounds, &left_top, &right_bottom);
-			printf("location_bounds_get_rect_coords(left_top: %lf, %lf - right_bottom: %lf, %lf) \n",
+			fprintf(stderr, "location_bounds_get_rect_coords(left_top: %lf, %lf - right_bottom: %lf, %lf) \n",
 			       left_top.latitude, left_top.longitude, right_bottom.latitude, right_bottom.longitude);
 		} else if (type == LOCATION_BOUNDS_POLYGON) {
 			location_bounds_foreach_polygon_coords(bounds, __poly_coords_cb, NULL);
@@ -117,23 +117,23 @@ void location_bounds_test()
 	location_bounds_h bounds_circle;
 	ret = location_bounds_create_circle(center, radius, &bounds_circle);
 	if (ret != LOCATION_BOUNDS_ERROR_NONE) {
-		printf("location_bounds_create_circle() failed\n");
+		fprintf(stderr, "location_bounds_create_circle() failed\n");
 	} else
-		printf("Bounds(circle) has been created successfully.\n");
+		fprintf(stderr, "Bounds(circle) has been created successfully.\n");
 
 	ret = location_manager_add_boundary(manager, bounds_circle);
 	if (ret != LOCATIONS_ERROR_NONE) {
-		printf("Setting boundary failed\n");
+		fprintf(stderr, "Setting boundary failed\n");
 	} else
-		printf("Boundary set\n");
+		fprintf(stderr, "Boundary set\n");
 
 	location_coords_s center2;
 	double radius2;
 	ret = location_bounds_get_circle_coords(bounds_circle, &center2, &radius2);
 	if (ret != LOCATIONS_ERROR_NONE) {
-		printf("location_bounds_get_circle_coords() failed\n");
+		fprintf(stderr, "location_bounds_get_circle_coords() failed\n");
 	} else
-		printf("location_bounds_get_circle_coords(center: %lf, %lf, radius: %lf) \n", center2.latitude,
+		fprintf(stderr, "location_bounds_get_circle_coords(center: %lf, %lf, radius: %lf) \n", center2.latitude,
 		       center2.longitude, radius2);
 
 	/*Add the rect bounds */
@@ -148,24 +148,24 @@ void location_bounds_test()
 	location_bounds_h bounds_rect;
 	ret = location_bounds_create_rect(left_top, right_bottom, &bounds_rect);
 	if (ret != LOCATION_BOUNDS_ERROR_NONE) {
-		printf("location_bounds_create_rect() failed\n");
+		fprintf(stderr, "location_bounds_create_rect() failed\n");
 	} else
-		printf("Bounds(rect) has been created successfully.\n");
+		fprintf(stderr, "Bounds(rect) has been created successfully.\n");
 
 	ret = location_manager_add_boundary(manager, bounds_rect);
 	if (ret != LOCATIONS_ERROR_NONE) {
-		printf("Setting boundary failed\n");
+		fprintf(stderr, "Setting boundary failed\n");
 	} else
-		printf("Boundary set\n");
+		fprintf(stderr, "Boundary set\n");
 
 	location_coords_s left_top2;
 	location_coords_s right_bottom2;
 
 	ret = location_bounds_get_rect_coords(bounds_rect, &left_top2, &right_bottom2);
 	if (ret != LOCATIONS_ERROR_NONE) {
-		printf("location_bounds_get_rect_coords() failed\n");
+		fprintf(stderr, "location_bounds_get_rect_coords() failed\n");
 	} else
-		printf("location_bounds_get_rect_coords(left_top: %lf, %lf - right_bottom: %lf, %lf) \n", left_top2.latitude,
+		fprintf(stderr, "location_bounds_get_rect_coords(left_top: %lf, %lf - right_bottom: %lf, %lf) \n", left_top2.latitude,
 		       left_top2.longitude, right_bottom2.latitude, right_bottom2.longitude);
 
 	/*Add the polygon bounds */
@@ -183,19 +183,19 @@ void location_bounds_test()
 	location_bounds_h bounds_poly;
 	ret = location_bounds_create_polygon(coord_list, poly_size, &bounds_poly);
 	if (ret != LOCATION_BOUNDS_ERROR_NONE) {
-		printf("location_bounds_create_polygon() failed\n");
+		fprintf(stderr, "location_bounds_create_polygon() failed\n");
 	} else
-		printf("Bounds(polygon) has been created successfully.\n");
+		fprintf(stderr, "Bounds(polygon) has been created successfully.\n");
 
 	ret = location_manager_add_boundary(manager, bounds_poly);
 	if (ret != LOCATIONS_ERROR_NONE) {
-		printf("Setting boundary failed\n");
+		fprintf(stderr, "Setting boundary failed\n");
 	} else
-		printf("Boundary set\n");
+		fprintf(stderr, "Boundary set\n");
 
 	ret = location_bounds_foreach_polygon_coords(bounds_poly, __poly_coords_cb, NULL);
 	if (ret != LOCATIONS_ERROR_NONE) {
-		printf("location_bounds_get_rect_coords() failed\n");
+		fprintf(stderr, "location_bounds_get_rect_coords() failed\n");
 	}
 
 	location_coords_s test_coords;
@@ -203,14 +203,14 @@ void location_bounds_test()
 	test_coords.longitude = 12;
 
 	if (location_bounds_contains_coordinates(bounds_poly, test_coords))
-		printf("location_bounds_contains_coordinates() retrun TRUE \n");
+		fprintf(stderr, "location_bounds_contains_coordinates() retrun TRUE \n");
 	else
-		printf("location_bounds_contains_coordinates() retrun FALSE \n");
+		fprintf(stderr, "location_bounds_contains_coordinates() retrun FALSE \n");
 
 	/*print current bounds */
 	ret = location_manager_foreach_boundary(manager, __location_bounds_cb, (void *)manager);
 	if (ret != LOCATIONS_ERROR_NONE) {
-		printf("location_manager_foreach_boundary() failed\n");
+		fprintf(stderr, "location_manager_foreach_boundary() failed\n");
 	}
 
 }
@@ -227,35 +227,35 @@ void location_get_last_information_test()
 
 	ret = location_manager_get_last_position(manager, &altitude, &latitude, &longitude, &timestamp);
 	if (ret != LOCATIONS_ERROR_NONE) {
-		printf(" Fail: location_manager_get_last_position ---> %d \n", ret);
+		fprintf(stderr, " Fail: location_manager_get_last_position ---> %d \n", ret);
 	} else {
-		printf("[%ld] alt: %g, lat: %g, long: %g\n", timestamp, altitude, latitude, longitude);
+		fprintf(stderr, "[%ld] alt: %g, lat: %g, long: %g\n", timestamp, altitude, latitude, longitude);
 	}
 
 	ret = location_manager_get_last_velocity(manager, &climb, &direction, &speed, &timestamp);
 	if (ret != LOCATIONS_ERROR_NONE) {
-		printf(" Fail: location_manager_get_last_velocity ---> %d \n", ret);
+		fprintf(stderr, " Fail: location_manager_get_last_velocity ---> %d \n", ret);
 	} else {
-		printf("climb: %f, direction: %f, speed: %f\n", climb, direction, speed);
+		fprintf(stderr, "climb: %f, direction: %f, speed: %f\n", climb, direction, speed);
 	}
 
 	ret = location_manager_get_last_accuracy(manager, &level, &horizontal, &vertical);
 	if (ret != LOCATIONS_ERROR_NONE) {
-		printf(" Fail: location_manager_get_last_accuracy ---> %d \n", ret);
+		fprintf(stderr, " Fail: location_manager_get_last_accuracy ---> %d \n", ret);
 	} else {
-		printf("Level: %d, horizontal: %g, vertical: %g\n", level, horizontal, vertical);
+		fprintf(stderr, "Level: %d, horizontal: %g, vertical: %g\n", level, horizontal, vertical);
 	}
 
 	ret = gps_status_get_last_satellite(manager, &num_of_active, &num_of_inview, &timestamp);
 	if (ret != LOCATIONS_ERROR_NONE) {
-		printf(" Fail: gps_status_get_last_satellite_count_in_view ---> %d \n", ret);
+		fprintf(stderr, " Fail: gps_status_get_last_satellite_count_in_view ---> %d \n", ret);
 	} else {
-		printf("[%ld] Satellite number of active: %d, in view: %d\n", timestamp, num_of_active, num_of_inview);
+		fprintf(stderr, "[%ld] Satellite number of active: %d, in view: %d\n", timestamp, num_of_active, num_of_inview);
 	}
 
 	ret = gps_status_foreach_last_satellites_in_view(manager, last_satellites_foreach_cb, NULL);
 	if (ret != LOCATIONS_ERROR_NONE) {
-		printf(" Fail: gps_status_foreach_last_satellites_in_view ---> %d \n", ret);
+		fprintf(stderr, " Fail: gps_status_foreach_last_satellites_in_view ---> %d \n", ret);
 	}
 }
 #endif
@@ -272,9 +272,9 @@ static void _state_change_cb(location_service_state_e state, void *user_data)
 		time_t timestamp;
 		ret = location_manager_get_position(lm, &altitude, &latitude, &longitude, &timestamp);
 		if (ret != LOCATIONS_ERROR_NONE) {
-			printf(" Fail: location_manager_get_position ---> %d \n", ret);
+			fprintf(stderr, " Fail: location_manager_get_position ---> %d \n", ret);
 		} else {
-			printf("[%ld] alt: %g, lat %g, long %g\n", timestamp, altitude, latitude, longitude);
+			fprintf(stderr, "[%ld] alt: %g, lat %g, long %g\n", timestamp, altitude, latitude, longitude);
 		}
 
 		location_accuracy_level_e level;
@@ -282,17 +282,17 @@ static void _state_change_cb(location_service_state_e state, void *user_data)
 		double vertical;
 		ret = location_manager_get_accuracy(lm, &level, &horizontal, &vertical);
 		if (ret != LOCATIONS_ERROR_NONE) {
-			printf(" Fail: location_manager_get_accuracy ---> %d \n", ret);
+			fprintf(stderr, " Fail: location_manager_get_accuracy ---> %d \n", ret);
 		} else {
-			printf("Level: %d, horizontal: %g, vertical %g\n", level, horizontal, vertical);
+			fprintf(stderr, "Level: %d, horizontal: %g, vertical %g\n", level, horizontal, vertical);
 		}
 #if 0
 		char *nmea;
 		ret = gps_status_get_nmea(lm, &nmea);
 		if (ret != LOCATIONS_ERROR_NONE) {
-			printf(" Fail: gps_status_get_nmea ---> %d \n", ret);
+			fprintf(stderr, " Fail: gps_status_get_nmea ---> %d \n", ret);
 		} else {
-			printf("NMEA: %s\n", nmea);
+			fprintf(stderr, "NMEA: %s\n", nmea);
 			free(nmea);
 		}
 #endif
@@ -303,7 +303,18 @@ static void _state_change_cb(location_service_state_e state, void *user_data)
 void _position_updated_cb(double latitude, double longitude, double altitude, time_t timestamp, void *user_data)
 {
 	fprintf(stderr, "-------------------------- position updated --------------------------\n");
-	printf("[%ld] lat[%f] lon[%f] alt[%f]\n", timestamp, latitude, longitude, altitude);
+	fprintf(stderr, "[%ld] lat[%f] lon[%f] alt[%f]\n", timestamp, latitude, longitude, altitude);
+
+	location_manager_h lm = (location_manager_h) user_data;
+	location_accuracy_level_e level;
+	double horizontal;
+	double vertical;
+	int ret = location_manager_get_accuracy(lm, &level, &horizontal, &vertical);
+	if (ret != LOCATIONS_ERROR_NONE) {
+		fprintf(stderr, " Fail: location_manager_get_accuracy ---> %d \n", ret);
+	} else {
+		fprintf(stderr, "Level: %d, horizontal: %g, vertical %g\n", level, horizontal, vertical);
+	}
 
 	repeat_count++;
 
@@ -315,14 +326,14 @@ void _position_updated_cb(double latitude, double longitude, double altitude, ti
 void _velocity_updated_cb(double speed, double direction, double climb, time_t timestamp, void *user_data)
 {
 	fprintf(stderr, "-------------------------- velocity updated --------------------------\n");
-	printf("[%ld] speed[%f] direction[%f] climb[%f]\n", timestamp, speed, direction, climb);
+	fprintf(stderr, "[%ld] speed[%f] direction[%f] climb[%f]\n", timestamp, speed, direction, climb);
 }
 
 void _location_cb(int error, double latitude, double longitude, double altitude, time_t timestamp, double speed, double climb, double direction, void *user_data)
 {
-	printf("error[%d]\n", error);
-	printf("location_cb: lat[%f] lon[%f] alt[%f]\n", latitude, longitude, altitude);
-	printf("speed[%f] climb[%f] direction[%f]\n", speed, climb, direction);
+	fprintf(stderr, "error[%d]\n", error);
+	fprintf(stderr, "location_cb: lat[%f] lon[%f] alt[%f]\n", latitude, longitude, altitude);
+	fprintf(stderr, "speed[%f] climb[%f] direction[%f]\n", speed, climb, direction);
 
 	test_timer = g_timeout_add_seconds(1, wait_test, NULL);
 }
@@ -330,7 +341,7 @@ void _location_cb(int error, double latitude, double longitude, double altitude,
 void _location_changed_cb(double latitude, double longitude, double altitude, double speed, double direction, double horizontal_accuracy, time_t timestamp, void *user_data)
 {
 	fprintf(stderr, "-------------------------- location changed --------------------------\n");
-	printf("[%ld] lat[%f] lon[%f] alt[%f] speed[%lf] direction[%lf], horizontal_accuracy[%lf]\n", timestamp, latitude, longitude, altitude, speed, direction, horizontal_accuracy);
+	fprintf(stderr, "[%ld] lat[%f] lon[%f] alt[%f] speed[%lf] direction[%lf], horizontal_accuracy[%lf]\n", timestamp, latitude, longitude, altitude, speed, direction, horizontal_accuracy);
 
 	repeat_count++;
 
@@ -342,14 +353,14 @@ void _location_changed_cb(double latitude, double longitude, double altitude, do
 bool _get_location_cb(double latitude, double longitude, double altitude, double speed, double direction, double horizontal, double vertical, time_t timestamp, void *user_data)
 {
 	fprintf(stderr, "-------------------------- batch: get location --------------------------\n");
-	printf("[%ld] lat[%f] lon[%f] alt[%f] speed[%lf] direction[%lf], horizontal_accuracy[%lf]\n", timestamp, latitude, longitude, altitude, speed, direction, horizontal);
+	fprintf(stderr, "[%ld] lat[%f] lon[%f] alt[%f] speed[%lf] direction[%lf], horizontal_accuracy[%lf]\n", timestamp, latitude, longitude, altitude, speed, direction, horizontal);
 	return TRUE;
 }
 
 void _location_batch_cb(int num_of_location, void *user_data)
 {
 	fprintf(stderr, "-------------------------- location batch --------------------------\n");
-	printf("num_of_location: [%d]\n", num_of_location);
+	fprintf(stderr, "num_of_location: [%d]\n", num_of_location);
 
 	location_manager_h manager = user_data;
 
@@ -365,31 +376,31 @@ void _location_batch_cb(int num_of_location, void *user_data)
 
 static void __setting_cb(location_method_e method, bool enable, void *user_data)
 {
-	printf("method[%d], enable[%d]\n", method, enable);
+	fprintf(stderr, "method[%d], enable[%d]\n", method, enable);
 }
 
 static void print_location_status()
 {
-	printf("==== LOCATION Setting state =====\n");
+	fprintf(stderr, "==== LOCATION Setting state =====\n");
 	bool is_enabled = FALSE;
 	location_manager_is_enabled_method(LOCATIONS_METHOD_HYBRID, &is_enabled);
-	printf("hybrid: %d, ", is_enabled);
+	fprintf(stderr, "hybrid: %d, ", is_enabled);
 
 	location_manager_is_enabled_method(LOCATIONS_METHOD_GPS, &is_enabled);
-	printf("gps: %d, ", is_enabled);
+	fprintf(stderr, "gps: %d, ", is_enabled);
 
 	location_manager_is_enabled_method(LOCATIONS_METHOD_WPS, &is_enabled);
-	printf("wps: %d\n", is_enabled);
+	fprintf(stderr, "wps: %d\n", is_enabled);
 }
 
 static int enable_method(location_method_e method, bool enable)
 {
 	int ret = 0;
-	printf("==== LOCATION Setting changed =====\n");
+	fprintf(stderr, "==== LOCATION Setting changed =====\n");
 
 	location_manager_set_setting_changed_cb(LOCATIONS_METHOD_HYBRID, __setting_cb, NULL);
 
-	printf("method[%d], enable[%d]\n", method, enable);
+	fprintf(stderr, "method[%d], enable[%d]\n", method, enable);
 	ret = location_manager_enable_method(method, enable);
 
 	location_manager_unset_setting_changed_cb(LOCATIONS_METHOD_HYBRID);
@@ -398,28 +409,28 @@ static int enable_method(location_method_e method, bool enable)
 
 static void print_menu()
 {
-	printf("============= LOCATION TEST =============\n");
-	printf("[1] Get location: LOCATIONS_METHOD_HYBRID\n");
-	printf("[2] Get location: LOCATIONS_METHOD_GPS\n");
-	printf("[3] Get location: LOCATIONS_METHOD_WPS\n");
-	printf("[4] Single location: LOCATIONS_METHOD_HYBRID\n");
-	printf("[5] Single location: LOCATIONS_METHOD_GPS\n");
-	printf("[6] Single location: LOCATIONS_METHOD_WPS\n\n");
-	printf("[11] Change update interval: LOCATIONS_METHOD_HYBRID\n");
-	printf("[12] Change update interval: LOCATIONS_METHOD_GPS\n\n");
-	printf("[21] Distance based location update: LOCATIONS_METHOD_HYBRID\n");
-	printf("[22] Distance based location update: LOCATIONS_METHOD_GPS\n");
-	printf("[23] Distance based location update: LOCATIONS_METHOD_WPS\n\n");
-	printf("[31] Location batch update: LOCATIONS_METHOD_GPS\n\n");
-	printf("[41] Turn on/off method: LOCATIONS_METHOD_HYBRID\n");
-	printf("[42] Turn on/off method: LOCATIONS_METHOD_GPS\n");
-	printf("[43] Turn on/off method: LOCATIONS_METHOD_WPS\n\n");
-	printf("[51] Boundary Test\n\n");
-	printf("[0] Exit!!!\n\n");
-	printf("Select menu: ");
+	fprintf(stderr, "============= LOCATION TEST =============\n");
+	fprintf(stderr, "[1] Get location: LOCATIONS_METHOD_HYBRID\n");
+	fprintf(stderr, "[2] Get location: LOCATIONS_METHOD_GPS\n");
+	fprintf(stderr, "[3] Get location: LOCATIONS_METHOD_WPS\n");
+	fprintf(stderr, "[4] Single location: LOCATIONS_METHOD_HYBRID\n");
+	fprintf(stderr, "[5] Single location: LOCATIONS_METHOD_GPS\n");
+	fprintf(stderr, "[6] Single location: LOCATIONS_METHOD_WPS\n\n");
+	fprintf(stderr, "[11] Change update interval: LOCATIONS_METHOD_HYBRID\n");
+	fprintf(stderr, "[12] Change update interval: LOCATIONS_METHOD_GPS\n\n");
+	fprintf(stderr, "[21] Distance based location update: LOCATIONS_METHOD_HYBRID\n");
+	fprintf(stderr, "[22] Distance based location update: LOCATIONS_METHOD_GPS\n");
+	fprintf(stderr, "[23] Distance based location update: LOCATIONS_METHOD_WPS\n\n");
+	fprintf(stderr, "[31] Location batch update: LOCATIONS_METHOD_GPS\n\n");
+	fprintf(stderr, "[41] Turn on/off method: LOCATIONS_METHOD_HYBRID\n");
+	fprintf(stderr, "[42] Turn on/off method: LOCATIONS_METHOD_GPS\n");
+	fprintf(stderr, "[43] Turn on/off method: LOCATIONS_METHOD_WPS\n\n");
+	fprintf(stderr, "[51] Boundary Test\n\n");
+	fprintf(stderr, "[0] Exit!!!\n\n");
+	fprintf(stderr, "Select menu: ");
 
 	if (scanf("%d", &menu) < 0) {
-		printf("Can't read menu !!!\n");
+		fprintf(stderr, "Can't read menu !!!\n");
 	}
 }
 
@@ -441,23 +452,23 @@ static int location_test()
 
 			int method = menu - 1;
 			ret = location_manager_create(method, &manager);
-			printf("location_manager_create (method: %d): %d\n", method, ret);
+			fprintf(stderr, "location_manager_create (method: %d): %d\n", method, ret);
 			ret = location_manager_start(manager);
-			printf("start: %d\n", ret);
-			}
+			fprintf(stderr, "start: %d\n", ret);
 			break;
+			}
 		case 4:
 		case 5:
 		case 6: {
 			int timeout = 30;
 
-			printf("\n	Input timeout ==> ");
+			fprintf(stderr, "\n	Input timeout ==> ");
 			ret = scanf("%d", &timeout);
 
 			int method = menu - 4;
 			ret = location_manager_create(method, &manager);
 			ret = location_manager_request_single_location(manager, timeout, _location_cb, manager);
-			printf("request single_location (method: %d): %d\n", method, ret);
+			fprintf(stderr, "request single_location (method: %d): %d\n", method, ret);
 			break;
 			}
 		case 11:
@@ -465,26 +476,26 @@ static int location_test()
 		case 13: {
 			int interval = 1;
 
-			printf("\n	Input position interval ==> ");
+			fprintf(stderr, "\n	Input position interval ==> ");
 			ret = scanf("%d", &interval);
 
 			int method = menu - 11;
 			ret = location_manager_create(method, &manager);
-			printf("location_manager_create (method: %d): %d\n", method, ret);
+			fprintf(stderr, "location_manager_create (method: %d): %d\n", method, ret);
 
 			ret = location_manager_set_position_updated_cb(manager, _position_updated_cb, interval, (void *)manager);
-			printf("set_position_updated_cb: %d\n", ret);
+			fprintf(stderr, "set_position_updated_cb: %d\n", ret);
 
 			/*
 			ret = location_manager_set_velocity_updated_cb(manager, _velocity_updated_cb, interval*2, (void *)manager);
-			printf("set_velocity_updated_cb: %d\n", ret);
+			fprintf(stderr, "set_velocity_updated_cb: %d\n", ret);
 			*/
 
 			ret = location_manager_set_location_changed_cb(manager, _location_changed_cb, interval * 2, (void *)manager);
-			printf("set_location_changed_cb: %d\n", ret);
+			fprintf(stderr, "set_location_changed_cb: %d\n", ret);
 
 			ret = location_manager_start(manager);
-			printf("start: %d\n", ret);
+			fprintf(stderr, "start: %d\n", ret);
 			break;
 			}
 		case 21:
@@ -493,40 +504,40 @@ static int location_test()
 			int interval = 1;
 			int method = menu - 21;
 
-			printf("\n	Input position interval ==> ");
+			fprintf(stderr, "\n	Input position interval ==> ");
 			ret = scanf("%d", &interval);
 
 			ret = location_manager_create(method, &manager);
-			printf("location_manager_create (method : %d)", method);
+			fprintf(stderr, "location_manager_create (method : %d)", method);
 
 			/*ret = location_manager_set_position_updated_cb(manager, _position_updated_cb, interval, (void *)manager); */
-			/*printf("set position changed callback: %d\n", ret); */
+			/*fprintf(stderr, "set position changed callback: %d\n", ret); */
 
 			ret = location_manager_set_distance_based_location_changed_cb(manager, _location_changed_cb, interval, 30, (void *)manager);
-			printf("set_distance_based_location_changed_cb: %d\n", ret);
+			fprintf(stderr, "set_distance_based_location_changed_cb: %d\n", ret);
 
 			ret = location_manager_start(manager);
-			printf("start: %d\n", ret);
+			fprintf(stderr, "start: %d\n", ret);
 			break;
 			}
 		case 31: {
 			int interval = 1;
-			printf("\n	Input batch interval ==> ");
+			fprintf(stderr, "\n	Input batch interval ==> ");
 			ret = scanf("%d", &interval);
 
 			int period = 60;
-			printf("	Input batch period ==> ");
+			fprintf(stderr, "	Input batch period ==> ");
 			ret = scanf("%d", &period);
 
 
 			ret = location_manager_create(LOCATIONS_METHOD_GPS, &manager);
-			printf("location_manager_create (method : %d)\n", LOCATIONS_METHOD_GPS);
+			fprintf(stderr, "location_manager_create (method : %d)\n", LOCATIONS_METHOD_GPS);
 
 			ret = location_manager_set_location_batch_cb(manager, _location_batch_cb, interval, period, (void *)manager);
-			printf("set_location_batch_cb: %d\n", ret);
+			fprintf(stderr, "set_location_batch_cb: %d\n", ret);
 
 			ret = location_manager_start_batch(manager);
-			printf("start_batch: %d\n", ret);
+			fprintf(stderr, "start_batch: %d\n", ret);
 			break;
 			}
 		case 41:
@@ -535,11 +546,11 @@ static int location_test()
 			int method = menu - 41;
 			int onoff = 1;
 
-			printf("\n	Input ON: 1 or OFF: 0 ==> ");
+			fprintf(stderr, "\n	Input ON: 1 or OFF: 0 ==> ");
 			ret = scanf("%d", &onoff);
 
 			ret = enable_method(method, onoff);
-			printf("Enabling method: [%d], ret=%d\n", method, ret);
+			fprintf(stderr, "Enabling method: [%d], ret=%d\n", method, ret);
 			break;
 			}
 
@@ -561,10 +572,10 @@ static int location_test()
 			testLocationCoordinates.longitude = 12;
 			location_bound_error_e nRet = location_bounds_create_polygon(location_coord_list, nPolySize, &hPolyLocationBound);
 
-			printf("location_bounds_create_polygon: %d\n", nRet);
+			fprintf(stderr, "location_bounds_create_polygon: %d\n", nRet);
 
 			bIsContained = location_bounds_contains_coordinates(hPolyLocationBound, testLocationCoordinates);// Target API
-			printf("bIsContained: %d\n", bIsContained);
+			fprintf(stderr, "bIsContained: %d\n", bIsContained);
 
 			location_bounds_destroy(hPolyLocationBound);
 			break;
@@ -573,28 +584,28 @@ static int location_test()
 			g_timeout_add_seconds(1, exit_program, NULL);
 			return 0;
 		default:
-			printf("Exit!!! Input: %d\n", menu);
+			fprintf(stderr, "Exit!!! Input: %d\n", menu);
 			g_timeout_add_seconds(1, exit_program, NULL);
 			return 0;
 	}
 
 	if (ret != LOCATIONS_ERROR_NONE) {
-		printf("Test Failed!!! [%d]\n", ret);
+		fprintf(stderr, "Test Failed!!! [%d]\n", ret);
 		g_timeout_add_seconds(1, exit_program, NULL);
 		return 0;
 	}
 
 	if (menu < 40) {
 		ret = location_manager_set_service_state_changed_cb(manager, _state_change_cb, (void *)manager);
-		printf("set_service_state_changed_cb: %d\n", ret);
+		fprintf(stderr, "set_service_state_changed_cb: %d\n", ret);
 
 		if (basic) {
 			ret = location_manager_set_position_updated_cb(manager, _position_updated_cb, interval, (void *)manager);
-			printf("set_position_updated_cb: %d\n", ret);
+			fprintf(stderr, "set_position_updated_cb: %d\n", ret);
 		}
 	}
 	else {
-		g_timeout_add_seconds(1, wait_test, NULL);
+		test_timer = g_timeout_add_seconds(1, wait_test, NULL);
 	}
 
 	return 0;
@@ -605,16 +616,16 @@ static void location_cleanup()
 	int ret = 0;
 	if (manager != NULL) {
 		ret = location_manager_stop(manager);
-		printf("stop: %d\n", ret);
+		fprintf(stderr, "stop: %d\n", ret);
 
 		ret = location_manager_unset_service_state_changed_cb(manager);
-		printf("unset_service_state_changed_cb: %d\n", ret);
+		fprintf(stderr, "unset_service_state_changed_cb: %d\n", ret);
 
 		ret = location_manager_unset_position_updated_cb(manager);
-		printf("unset_position_updated_cb: %d\n", ret);
+		fprintf(stderr, "unset_position_updated_cb: %d\n", ret);
 
 		ret = location_manager_destroy(manager);
-		printf("destroy: %d\n", ret);
+		fprintf(stderr, "destroy: %d\n", ret);
 		manager = NULL;
 	}
 }
