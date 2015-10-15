@@ -56,6 +56,9 @@ static LocationMethod __convert_LocationMethod(location_method_e method)
 		case LOCATIONS_METHOD_WPS:
 			_method = LOCATION_METHOD_WPS;
 			break;
+		case LOCATIONS_METHOD_MOCK:
+			_method = LOCATION_METHOD_MOCK;
+			break;
 		case LOCATIONS_METHOD_NONE:
 		default:
 			_method = LOCATION_METHOD_NONE;
@@ -119,24 +122,53 @@ static void __cb_location_updated(GObject *self, int error, gpointer position, g
 	}
 }
 
+
 static void __cb_service_enabled(GObject *self, guint status, gpointer userdata)
 {
-	LOCATIONS_LOGD("Callback function has been invoked. ");
-	location_manager_s *handle = (location_manager_s *) userdata;
-	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]) {
-		((location_service_state_changed_cb)
-		 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_ENABLED, handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
-	}
+        LOCATIONS_LOGD("Invoked. status = %d", status);
+        location_manager_s *handle = (location_manager_s *) userdata;
+        if (handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]) {
+                ((location_service_state_changed_cb)
+                 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_ENABLED, handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
+        }
 }
+
 
 static void __cb_service_disabled(GObject *self, guint status, gpointer userdata)
 {
-	LOCATIONS_LOGD("Callback function has been invoked. ");
-	location_manager_s *handle = (location_manager_s *) userdata;
+        LOCATIONS_LOGD("Callback function has been invoked. status = %d", status);
+        location_manager_s *handle = (location_manager_s *) userdata;
+	location_service_state_e state = LOCATIONS_SERVICE_DISABLED;
+
+	if (status == LOCATION_STATUS_MOCK_FAIL)
+		state = LOCATIONS_SERVICE_ERROR;
+
 	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])
-		((location_service_state_changed_cb)
-		 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_DISABLED, handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
+                ((location_service_state_changed_cb)
+                 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(state, handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
 }
+
+
+#if 0
+static void __cb_service_status_changed(GObject *self, guint status, gpointer userdata)
+{
+	LOCATIONS_LOGD("Invoked. status = %u", status);
+	location_manager_s *handle = (location_manager_s *) userdata;
+
+	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]) {
+		if (status == LOCATION_STATUS_2D_FIX || status == LOCATION_STATUS_3D_FIX)
+			((location_service_state_changed_cb)
+				 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_ENABLED, handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
+		else if (status == LOCATION_STATUS_NO_FIX)
+			((location_service_state_changed_cb)
+			 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_DISABLED,handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
+		else if (status == LOCATION_STATUS_MOCK_FAIL)
+			((location_service_state_changed_cb)
+				 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_ERROR,handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
+	}
+}
+#endif
+
 
 static int __compare_position(gconstpointer a, gconstpointer b)
 {
@@ -384,7 +416,7 @@ EXPORT_API int location_manager_is_enabled_method(location_method_e method, bool
 {
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
 
-	if (LOCATIONS_METHOD_HYBRID > method || LOCATIONS_METHOD_WPS < method) {
+	if (LOCATIONS_METHOD_HYBRID > method || LOCATIONS_METHOD_MOCK < method) {
 		LOCATIONS_LOGE("Not supported method [%d]", method);
 		return LOCATIONS_ERROR_INCORRECT_METHOD;
 	}
@@ -411,7 +443,7 @@ EXPORT_API int location_manager_enable_method(const location_method_e method, co
 {
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
 
-	if (LOCATIONS_METHOD_HYBRID > method || LOCATIONS_METHOD_WPS < method) {
+	if (LOCATIONS_METHOD_HYBRID > method || LOCATIONS_METHOD_MOCK < method) {
 		LOCATIONS_LOGE("Not supported method [%d]", method);
 		return LOCATIONS_ERROR_INCORRECT_METHOD;
 	}
@@ -430,7 +462,10 @@ EXPORT_API int location_manager_enable_method(const location_method_e method, co
 		}
 		return LOCATIONS_ERROR_NONE;
 
-	} else {
+	} else if (LOCATIONS_METHOD_MOCK == method) {
+		ret = location_enable_mock(LOCATION_METHOD_MOCK, enable);
+		return __convert_error_code(ret);
+	} else  {
 		if ((LOCATIONS_METHOD_GPS == method) && (__is_gps_supported() == LOCATIONS_ERROR_NOT_SUPPORTED)) {
 			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x)", LOCATIONS_ERROR_NOT_SUPPORTED);
 			return LOCATIONS_ERROR_NOT_SUPPORTED;
@@ -440,7 +475,6 @@ EXPORT_API int location_manager_enable_method(const location_method_e method, co
 		}
 
 		LocationMethod _method = __convert_LocationMethod(method);
-
 		int ret = location_enable_method(_method, enable);
 
 		return __convert_error_code(ret);
@@ -471,6 +505,7 @@ EXPORT_API int location_manager_create(location_method_e method, location_manage
 		LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x) : fail to location_init", LOCATIONS_ERROR_NOT_SUPPORTED);
 		return LOCATIONS_ERROR_NOT_SUPPORTED;
 	}
+
 	if (!location_is_supported_method(_method)) {
 		LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x) : fail to location_is_supported_method", LOCATIONS_ERROR_NOT_SUPPORTED);
 		return LOCATIONS_ERROR_NOT_SUPPORTED;
@@ -502,11 +537,17 @@ EXPORT_API int location_manager_create(location_method_e method, location_manage
 	handle->is_continue_foreach_bounds = TRUE;
 	handle->bounds_list = NULL;
 
+
 	if (!handle->sig_id[_LOCATION_SIGNAL_SERVICE_ENABLED])
-		handle->sig_id[_LOCATION_SIGNAL_SERVICE_ENABLED] = g_signal_connect(handle->object, "service-enabled", G_CALLBACK(__cb_service_enabled), handle);
+			handle->sig_id[_LOCATION_SIGNAL_SERVICE_ENABLED] = g_signal_connect(handle->object, "service-enabled", G_CALLBACK(__cb_service_enabled), handle);
 
 	if (!handle->sig_id[_LOCATION_SIGNAL_SERVICE_DISABLED])
-		handle->sig_id[_LOCATION_SIGNAL_SERVICE_DISABLED] = g_signal_connect(handle->object, "service-disabled", G_CALLBACK(__cb_service_disabled), handle);
+			handle->sig_id[_LOCATION_SIGNAL_SERVICE_DISABLED] = g_signal_connect(handle->object, "service-disabled", G_CALLBACK(__cb_service_disabled), handle);
+
+#if 0
+	if (!handle->sig_id[_LOCATION_SIGNAL_STATUS_CHANGED])
+		handle->sig_id[_LOCATION_SIGNAL_STATUS_CHANGED] = g_signal_connect(handle->object, "status-changed", G_CALLBACK(__cb_service_status_changed), handle);
+#endif
 
 	*manager = (location_manager_h) handle;
 	return LOCATIONS_ERROR_NONE;
@@ -519,6 +560,7 @@ EXPORT_API int location_manager_destroy(location_manager_h manager)
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
 
+
 	if (handle->sig_id[_LOCATION_SIGNAL_SERVICE_ENABLED]) {
 		g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_SERVICE_ENABLED]);
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_ENABLED] = 0;
@@ -527,6 +569,18 @@ EXPORT_API int location_manager_destroy(location_manager_h manager)
 	if (handle->sig_id[_LOCATION_SIGNAL_SERVICE_DISABLED]) {
 		g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_SERVICE_DISABLED]);
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_DISABLED] = 0;
+	}
+
+#if 0
+	if (handle->sig_id[_LOCATION_SIGNAL_STATUS_CHANGED]) {
+		g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_STATUS_CHANGED]);
+		handle->sig_id[_LOCATION_SIGNAL_STATUS_CHANGED] = 0;
+	}
+#endif
+
+	if (handle->sig_id[_LOCATION_SIGNAL_ERROR_EMITTED]) {
+		g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_ERROR_EMITTED]);
+		handle->sig_id[_LOCATION_SIGNAL_ERROR_EMITTED] = 0;
 	}
 
 	int ret = location_free(handle->object);
@@ -547,7 +601,7 @@ EXPORT_API int location_manager_start(location_manager_h manager)
 	if (!handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED])
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED] = g_signal_connect(handle->object, "service-updated", G_CALLBACK(__cb_service_updated), handle);
 
-	if (LOCATIONS_METHOD_HYBRID <= handle->method && LOCATIONS_METHOD_WPS >= handle->method) {
+	if (LOCATIONS_METHOD_HYBRID <= handle->method && LOCATIONS_METHOD_MOCK >= handle->method) {
 		if (!handle->sig_id[_LOCATION_SIGNAL_ZONE_IN])
 			handle->sig_id[_LOCATION_SIGNAL_ZONE_IN] = g_signal_connect(handle->object, "zone-in", G_CALLBACK(__cb_zone_in), handle);
 
@@ -611,7 +665,7 @@ EXPORT_API int location_manager_stop(location_manager_h manager)
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED] = 0;
 	}
 
-	if (LOCATIONS_METHOD_HYBRID <= handle->method && LOCATIONS_METHOD_WPS >= handle->method) {
+	if (LOCATIONS_METHOD_HYBRID <= handle->method && LOCATIONS_METHOD_MOCK >= handle->method) {
 		if (handle->sig_id[_LOCATION_SIGNAL_ZONE_IN]) {
 			g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_ZONE_IN]);
 			handle->sig_id[_LOCATION_SIGNAL_ZONE_IN] = 0;
@@ -707,13 +761,15 @@ EXPORT_API int location_manager_get_method(location_manager_h manager, location_
 		case LOCATION_METHOD_WPS:
 			*method = LOCATIONS_METHOD_WPS;
 			break;
+		case LOCATION_METHOD_MOCK:
+			*method = LOCATIONS_METHOD_MOCK;
+			break;
 		default: {
 				LOCATIONS_LOGE("LOCATIONS_ERROR_INVALID_PARAMETER(0x%08x) : Out of range (location_method_e) - method : %d ",
 								LOCATIONS_ERROR_INVALID_PARAMETER, method);
 				return LOCATIONS_ERROR_INVALID_PARAMETER;
 			}
 	}
-	/**method = handle->method; */
 	return LOCATIONS_ERROR_NONE;
 }
 
@@ -1388,3 +1444,179 @@ EXPORT_API int gps_status_foreach_last_satellites_in_view(location_manager_h man
 	location_satellite_free(last_sat);
 	return LOCATIONS_ERROR_NONE;
 }
+
+
+/**
+ * Tizen 3.0
+ */
+
+#if 0
+EXPORT_API int
+location_manager_get_service_state(ocation_manager_h manager, location_service_state_e *state)
+
+{
+	LOCATIONS_LOGD("ENTER >>>");
+
+	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
+	LOCATIONS_NULL_ARG_CHECK(manager);
+	LOCATIONS_NULL_ARG_CHECK(state);
+
+	location_manager_s *handle = (location_manager_s *) manager;
+
+	int service_state = -1;
+
+	int ret = location_get_service_state(handle->object, &service_state);
+	if (ret != LOCATION_ERROR_NONE) {
+		if (ret == LOCATION_ERROR_NOT_SUPPORTED)
+			return LOCATIONS_ERROR_INCORRECT_METHOD;
+		return __convert_error_code(ret);
+	}
+	if (service_state == -1) {
+		return LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
+	}
+
+	*state = (service_state == 0) ? LOCATIONS_SERVICE_DISABLED : LOCATIONS_SERVICE_ENABLED;
+
+	return LOCATIONS_ERROR_NONE;
+}
+
+EXPORT_API int location_manager_is_test_location_enabled(bool *enable)
+{
+	LOCATIONS_LOGD("ENTER >>>");
+
+	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
+	LOCATIONS_NULL_ARG_CHECK(enable);
+
+	int is_enabled_val = -1;
+	int ret = location_is_enabled_method(LOCATION_METHOD_MOCK, &is_enabled_val);
+	if (ret != LOCATION_ERROR_NONE) {
+		if (ret == LOCATION_ERROR_NOT_SUPPORTED)
+			return LOCATIONS_ERROR_INCORRECT_METHOD;
+		return __convert_error_code(ret);
+	}
+	if (is_enabled_val == -1) {
+		return TIZEN_ERROR_PERMISSION_DENIED;
+	}
+
+	*enable = (is_enabled_val == 0) ? FALSE : TRUE;
+	return LOCATIONS_ERROR_NONE;
+}
+#endif
+
+
+EXPORT_API int location_manager_enable_mock_location(const bool enable)
+{
+	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
+
+	LOCATIONS_LOGD("enable: %d", enable);
+
+	int ret = 0;
+	ret = location_enable_mock(LOCATION_METHOD_MOCK, enable);
+	return __convert_error_code(ret);
+}
+
+#if 0
+static LocationMethod __convert_MockLocationMethod(location_method_e method)
+{
+	LocationMethod _method = LOCATION_METHOD_NONE;
+	switch (method) {
+		case LOCATIONS_METHOD_HYBRID:
+			_method = LOCATION_METHOD_MOCK;
+			break;
+		case LOCATIONS_METHOD_GPS:
+			_method = LOCATION_METHOD_MOCK_GPS;
+			break;
+		case LOCATIONS_METHOD_WPS:
+			_method = LOCATION_METHOD_MOCK_WPS;
+			break;
+		case LOCATIONS_METHOD_NONE:
+		default:
+			_method = LOCATION_METHOD_NONE;
+			break;
+	}
+	return _method;
+}
+
+EXPORT_API int location_manager_enable_test_location_method(location_method_e method, const bool enable)
+{
+	if (LOCATIONS_METHOD_HYBRID > method || LOCATIONS_METHOD_WPS < method) {
+		LOCATIONS_LOGE("Not supported method [%d]", method);
+		return LOCATIONS_ERROR_INCORRECT_METHOD;
+	}
+
+	LOCATIONS_LOGD("method: %d, enable: %d", method, enable);
+
+	LocationMethod _method = __convert_MockLocationMethod(method);
+
+	int ret = location_set_mock_method_enabled(_method, enable);
+
+	return __convert_error_code(ret);
+}
+
+EXPORT_API int
+location_add_test_provider(const LocationMethod method, const int enable)
+{
+	int ret = 0;
+	char *_key = NULL;
+
+#ifndef TIZEN_PROFILE_TV
+	ret = location_check_privilege(LOCATION_ENABLE_PRIVILEGE);
+	if (ret != LOCATION_ERROR_NONE) {
+		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
+		return LOCATION_ERROR_NOT_ALLOWED;
+	}
+#endif
+
+	if (method == LOCATION_METHOD_MOCK) {
+		_key = __convert_setting_key(method);
+		if (!_key) {
+			LOCATION_LOGE("Invalid method[%d]", method);
+			return LOCATION_ERROR_NOT_SUPPORTED;
+		}
+		ret = vconf_set_int(_key, enable);
+		if (ret != VCONF_OK) {
+			LOCATION_SECLOG("vconf_set_int failed [%s], ret=[%d]", _key, ret);
+			g_free(_key);
+			return LOCATION_ERROR_NOT_ALLOWED;
+		}
+
+		g_free(_key);
+	}
+	return ret;
+}
+#endif
+
+
+EXPORT_API int location_manager_set_mock_location(location_manager_h manager, double altitude, double latitude, double longitude,
+	double climb, double direction, double speed,
+	location_accuracy_level_e level, double horizontal, double vertical)
+{
+
+	location_manager_s *handle = (location_manager_s *) manager;
+	int ret;
+	LocationPosition *pos = NULL;
+	LocationVelocity *vel = NULL;
+	LocationAccuracy *acc = NULL;
+
+	pos = location_position_new(0, latitude, longitude, altitude, LOCATION_STATUS_3D_FIX);
+	if (!pos) {
+		LOCATIONS_LOGE("Failed to create position");
+		return LOCATIONS_ERROR_OUT_OF_MEMORY;
+	}
+	vel = location_velocity_new(0, speed, direction, climb);
+	if (!vel) {
+		LOCATIONS_LOGE("Failed to create volocity");
+		return LOCATIONS_ERROR_OUT_OF_MEMORY;
+	}
+
+	acc = location_accuracy_new(LOCATION_ACCURACY_LEVEL_DETAILED, horizontal, vertical);
+	if (!vel) {
+		LOCATIONS_LOGE("Failed to create accuracy");
+		return LOCATIONS_ERROR_OUT_OF_MEMORY;
+	}
+
+	ret = location_set_mock_location(handle->object, pos, vel, acc);
+	return __convert_error_code(ret);
+
+}
+
