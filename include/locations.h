@@ -46,6 +46,7 @@ typedef enum {
 	LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE		= TIZEN_ERROR_LOCATION_MANAGER | 0x03,	/**< Location service is not available */
 	LOCATIONS_ERROR_GPS_SETTING_OFF				= TIZEN_ERROR_LOCATION_MANAGER | 0x04,	/**< GPS/WPS setting is not enabled */
 	LOCATIONS_ERROR_SECURITY_RESTRICTED			= TIZEN_ERROR_LOCATION_MANAGER | 0x05,	/**< Restricted by security system policy */
+	LOCATIONS_ERROR_SETTING_OFF					= LOCATIONS_ERROR_GPS_SETTING_OFF,	/**< GPS, WPS, or MOCK setting is not enabled (Since 3.0) */
 } location_error_e;
 
 
@@ -58,6 +59,7 @@ typedef enum {
 	LOCATIONS_METHOD_HYBRID,	/**< This method selects the best method available at the moment */
 	LOCATIONS_METHOD_GPS,		/**< This method uses Global Positioning System */
 	LOCATIONS_METHOD_WPS,		/**< This method uses WiFi Positioning System */
+	LOCATIONS_METHOD_MOCK,		/**< This method uses mock location for testing (Since 3.0)*/
 } location_method_e;
 
 /**
@@ -255,7 +257,7 @@ int location_manager_is_enabled_method(location_method_e method, bool *enable);
 
 /**
  * @platform
- * @brief Enable the given location method.
+ * @brief Enables the given location method.
  * @since_tizen 2.3.1
  * @privlevel platform
  * @privilege %http://tizen.org/privilege/location.enable
@@ -862,6 +864,73 @@ int location_manager_set_location_changed_cb(location_manager_h manager, locatio
  * @see location_manager_set_location_changed_cb()
  */
 int location_manager_unset_location_changed_cb(location_manager_h manager);
+
+/**
+ * @brief Enables mock location.
+ * @remarks You can enable the mock location when developer mode is enabled.
+ * @since_tizen 3.0
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/location
+ * @param[in] enable		The value to set
+ * @return 0 on success, otherwise a negative error value
+ * @retval #LOCATIONS_ERROR_NONE Successful
+ * @retval #LOCATIONS_ERROR_SETTING_OFF	MOCK location is not enabled
+ * @retval #LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED Permission denied
+ * @retval #LOCATIONS_ERROR_NOT_SUPPORTED	Not supported
+ * @see location_manager_is_enabled_method()
+ * @see location_manager_create()
+ * @see location_manager_set_mock_location()
+ */
+int location_manager_enable_mock_location(const bool enable);
+
+/**
+ * @brief Sets a mock location for the given location method.
+ * @details The location sets the given altitude, latitude, longitude, climb, direction, speed, level, horizontal and vertical accuracy.
+ *
+ * @since_tizen 3.0
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/location
+ * @param[in] manager		The location manager handle
+ * @param[in] latitude		The current latitude [-90.0 ~ 90.0] (degrees)
+ * @param[in] longitude	The current longitude [-180.0 ~ 180.0] (degrees)
+ * @param[in] altitude		The current altitude (meters)
+ * @param[in] speed		The speed (km/h)
+ * @param[in] direction	The direction, degrees from the north [0.0 ~ 360.0]
+ * @param[in] accuracy		The horizontal accuracy (meters)
+ * @return 0 on success, otherwise a negative error value
+ * @retval #LOCATIONS_ERROR_NONE					Successful
+ * @retval #LOCATIONS_ERROR_INVALID_PARAMETER		Invalid argument
+ * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE	Service not available
+ * @retval #LOCATIONS_ERROR_SETTING_OFF				MOCK location is not enabled
+ * @retval #LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED The application does not have the privilege to call this method
+ * @retval #LOCATIONS_ERROR_NOT_SUPPORTED			Not supported
+ * @see location_manager_is_enabled_method()
+ * @see location_manager_enable_mock_location()
+ * @see location_manager_create()
+ * @see location_manager_clear_mock_location()
+ */
+int location_manager_set_mock_location(location_manager_h manager, const double latitude, const double longitude, const double altitude, const double speed, const double direction, const double accuracy);
+
+/**
+ * @brief Clears a mock location.
+ *
+ * @since_tizen 3.0
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/location
+ * @param[in] manager		The location manager handle
+ * @return 0 on success, otherwise a negative error value
+ * @retval #LOCATIONS_ERROR_NONE					Successful
+ * @retval #LOCATIONS_ERROR_INVALID_PARAMETER		Invalid argument
+ * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE	Service not available
+ * @retval #LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED The application does not have the privilege to call this method
+ * @retval #LOCATIONS_ERROR_SETTING_OFF				MOCK location is not enabled
+ * @retval #LOCATIONS_ERROR_NOT_SUPPORTED			Not supported
+ * @see location_manager_is_enabled_method()
+ * @see location_manager_enable_mock_location()
+ * @see location_manager_create()
+ * @see location_manager_set_mock_location()
+ */
+int location_manager_clear_mock_location(location_manager_h manager);
 
 /**
  * @}
