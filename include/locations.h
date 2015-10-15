@@ -373,7 +373,7 @@ int location_manager_start(location_manager_h manager);
  * #location_manager_set_service_state_changed_cb() will be called, with #LOCATIONS_SERVICE_DISABLED as first argument.
  * When that happens, the service is stopped and the user is notified.
  *
- * You can stop and start the location manager as needed.
+ * @remarks You can stop and start the location manager as needed.
  *
  * @param[in] manager		The location manager handle
  * @return 0 on success, otherwise a negative error value
@@ -862,6 +862,67 @@ int location_manager_set_location_changed_cb(location_manager_h manager, locatio
  * @see location_manager_set_location_changed_cb()
  */
 int location_manager_unset_location_changed_cb(location_manager_h manager);
+
+/**
+ * @brief Enable mock location.
+ * @since_tizen 3.0
+ * @privlevel platform
+ * @privilege %http://tizen.org/privilege/location.enable
+ * @param[in] enable		The value to set
+ * @return 0 on success, otherwise a negative error value
+ * @retval #LOCATIONS_ERROR_NONE Successful
+ * @retval #LOCATIONS_ERROR_INCORRECT_METHOD Incorrect method
+ * @retval #LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED Permission denied
+ * @retval #LOCATIONS_ERROR_NOT_SUPPORTED	Not supported
+ * @see location_manager_is_enabled_method()
+ * @see location_manager_create()
+ */
+int location_manager_enable_test_location(const bool enable);
+
+/**
+ * @brief Enable mock location for the given location method.
+ * @since_tizen 3.0
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/location
+ * @param[in] method		The value to set
+ * @param[in] enable		The value to set
+ * @return 0 on success, otherwise a negative error value
+ * @retval #LOCATIONS_ERROR_NONE Successful
+ * @retval #LOCATIONS_ERROR_INCORRECT_METHOD Incorrect method
+ * @retval #LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED Permission denied
+ * @retval #LOCATIONS_ERROR_NOT_SUPPORTED	Not supported
+ * @see location_manager_is_enabled_method()
+ * @see location_manager_create()
+ */
+int location_manager_set_test_location_method(location_method_e method, const bool enable);
+
+/**
+ * @brief Sets a mock location for the given location method.
+ * @details The result contains the current altitude, latitude, longitude, climb, direction, speed, level, horizontal and vertical with a measurement timestamp.
+ *
+ * @since_tizen 3.0
+ * @privlevel public
+ * @privilege %http://tizen.org/privilege/location
+ * @param[in] manager		The location manager handle
+ * @param[in] altitude		The current altitude (meters)
+ * @param[in] latitude		The current latitude [-90.0 ~ 90.0] (degrees)
+ * @param[in] longitude	The current longitude [-180.0 ~ 180.0] (degrees)
+ * @param[in] climb		The climb (km/h)
+ * @param[in] direction	The direction, degrees from the north
+ * @param[in] speed		The speed (km/h)
+ * @param[in] level		The accuracy level
+ * @param[in] horizontal	The horizontal accuracy (meters)
+ * @param[in] vertical		The vertical accuracy (meters)
+ * @return 0 on success, otherwise a negative error value
+ * @retval #LOCATIONS_ERROR_NONE					Successful
+ * @retval #LOCATIONS_ERROR_INVALID_PARAMETER		Invalid argument
+ * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE	Service not available
+ * @retval #LOCATIONS_ERROR_GPS_SETTING_OFF			GPS is not enabled
+ * @retval #LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED The application does not have the privilege to call this method
+ * @retval #LOCATIONS_ERROR_NOT_SUPPORTED			Not supported
+ * @pre The location service state must be #LOCATIONS_SERVICE_ENABLED with location_manager_start()
+ */
+int location_manager_set_test_location(location_manager_h manager, double altitude, double latitude, double longitude, double climb, double direction, double speed, location_accuracy_level_e level, double horizontal, double vertical);
 
 /**
  * @}
