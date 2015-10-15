@@ -21,6 +21,8 @@
 #include <locations.h>
 #include <location_bounds.h>
 #include <location_batch.h>
+#include <unistd.h>
+
 
 static location_manager_h manager;
 static GMainLoop *g_mainloop = NULL;
@@ -274,7 +276,7 @@ static void _state_change_cb(location_service_state_e state, void *user_data)
 		if (ret != LOCATIONS_ERROR_NONE) {
 			fprintf(stderr, " Fail: location_manager_get_position ---> %d \n", ret);
 		} else {
-			fprintf(stderr, "[%ld] alt: %g, lat %g, long %g\n", timestamp, altitude, latitude, longitude);
+			fprintf(stderr, "[%ld] lat: %f, lng: %f, alt: %f\n", timestamp, latitude, longitude, altitude);
 		}
 
 		location_accuracy_level_e level;
@@ -284,7 +286,7 @@ static void _state_change_cb(location_service_state_e state, void *user_data)
 		if (ret != LOCATIONS_ERROR_NONE) {
 			fprintf(stderr, " Fail: location_manager_get_accuracy ---> %d \n", ret);
 		} else {
-			fprintf(stderr, "Level: %d, horizontal: %g, vertical %g\n", level, horizontal, vertical);
+			fprintf(stderr, "Level: %d, horizontal: %f, vertical %f\n", level, horizontal, vertical);
 		}
 #if 0
 		char *nmea;
@@ -303,7 +305,7 @@ static void _state_change_cb(location_service_state_e state, void *user_data)
 void _position_updated_cb(double latitude, double longitude, double altitude, time_t timestamp, void *user_data)
 {
 	fprintf(stderr, "-------------------------- position updated --------------------------\n");
-	fprintf(stderr, "[%ld] lat[%f] lon[%f] alt[%f]\n", timestamp, latitude, longitude, altitude);
+	fprintf(stderr, "[%ld] lat: %f, lng: %f, alt: %f\n", timestamp, latitude, longitude, altitude);
 
 	location_manager_h lm = (location_manager_h) user_data;
 	location_accuracy_level_e level;
@@ -313,12 +315,12 @@ void _position_updated_cb(double latitude, double longitude, double altitude, ti
 	if (ret != LOCATIONS_ERROR_NONE) {
 		fprintf(stderr, " Fail: location_manager_get_accuracy ---> %d \n", ret);
 	} else {
-		fprintf(stderr, "Level: %d, horizontal: %g, vertical %g\n", level, horizontal, vertical);
+		fprintf(stderr, "Level: %d, horizontal: %f, vertical %f\n", level, horizontal, vertical);
 	}
 
 	repeat_count++;
 
-	if (repeat_count > 2) {
+	if (repeat_count > 9) {
 		test_timer = g_timeout_add_seconds(1, wait_test, NULL);
 	}
 }
@@ -345,7 +347,7 @@ void _location_changed_cb(double latitude, double longitude, double altitude, do
 
 	repeat_count++;
 
-	if (repeat_count > 2) {
+	if (repeat_count > 5) {
 		test_timer = g_timeout_add_seconds(1, wait_test, NULL);
 	}
 }
@@ -390,7 +392,11 @@ static void print_location_status()
 	fprintf(stderr, "gps: %d, ", is_enabled);
 
 	location_manager_is_enabled_method(LOCATIONS_METHOD_WPS, &is_enabled);
-	fprintf(stderr, "wps: %d\n", is_enabled);
+	fprintf(stderr, "wps: %d, ", is_enabled);
+
+	/* location_manager_is_test_location_enabled(&is_enabled); */
+	location_manager_is_enabled_method(LOCATIONS_METHOD_MOCK, &is_enabled);
+	fprintf(stderr, "mock: %d\n", is_enabled);
 }
 
 static int enable_method(location_method_e method, bool enable)
@@ -405,6 +411,44 @@ static int enable_method(location_method_e method, bool enable)
 
 	location_manager_unset_setting_changed_cb(LOCATIONS_METHOD_HYBRID);
 	return ret;
+}
+
+static int test_clear_mock_location(gpointer user_data)
+{
+	location_manager_h manager = (location_manager_h) user_data;
+	int ret = 0;
+
+	ret = location_manager_clear_mock_location(manager);
+	fprintf(stderr, "\n==== location_manager_clear_mock_location: %d ====\n\n", ret);
+
+	/*
+	int state = 0;
+	ret = location_manager_get_service_state(manager, &state);
+	fprintf(stderr, "the current state: %d, ret = %d\n", state, ret);
+	*/
+
+	return FALSE;
+}
+
+
+static int test_set_mock_location(gpointer user_data)
+{
+	location_manager_h manager = (location_manager_h) user_data;
+	int ret = 0;
+
+	/*
+	int state = 0;
+	ret = location_manager_get_service_state(manager, &state);
+	fprintf(stderr, "the current state: %d, ret = %d\n", state, ret);
+	*/
+
+	ret = location_manager_set_mock_location(manager, 20, 20, 0, 40, 50, 100);
+	fprintf(stderr, "\n==== location_manager_set_location: %d ====\n\n", ret);
+	if (ret != LOCATIONS_ERROR_NONE) {
+		g_timeout_add_seconds(3, test_clear_mock_location, manager);
+	}
+
+	return FALSE;
 }
 
 static void print_menu()
@@ -422,10 +466,12 @@ static void print_menu()
 	fprintf(stderr, "[22] Distance based location update: LOCATIONS_METHOD_GPS\n");
 	fprintf(stderr, "[23] Distance based location update: LOCATIONS_METHOD_WPS\n\n");
 	fprintf(stderr, "[31] Location batch update: LOCATIONS_METHOD_GPS\n\n");
-	fprintf(stderr, "[41] Turn on/off method: LOCATIONS_METHOD_HYBRID\n");
-	fprintf(stderr, "[42] Turn on/off method: LOCATIONS_METHOD_GPS\n");
-	fprintf(stderr, "[43] Turn on/off method: LOCATIONS_METHOD_WPS\n\n");
-	fprintf(stderr, "[51] Boundary Test\n\n");
+	fprintf(stderr, "[41] Turn on/off mock test: LOCATIONS_METHOD_MOCK\n");
+	fprintf(stderr, "[42] Set & Clear location: LOCATIONS_METHOD_HYBRID\n\n");
+	fprintf(stderr, "[51] Turn on/off method: LOCATIONS_METHOD_HYBRID\n");
+	fprintf(stderr, "[52] Turn on/off method: LOCATIONS_METHOD_GPS\n");
+	fprintf(stderr, "[53] Turn on/off method: LOCATIONS_METHOD_WPS\n\n");
+	fprintf(stderr, "[61] Boundary Test\n\n");
 	fprintf(stderr, "[0] Exit!!!\n\n");
 	fprintf(stderr, "Select menu: ");
 
@@ -529,7 +575,6 @@ static int location_test()
 			fprintf(stderr, "	Input batch period ==> ");
 			ret = scanf("%d", &period);
 
-
 			ret = location_manager_create(LOCATIONS_METHOD_GPS, &manager);
 			fprintf(stderr, "location_manager_create (method : %d)\n", LOCATIONS_METHOD_GPS);
 
@@ -540,21 +585,70 @@ static int location_test()
 			fprintf(stderr, "start_batch: %d\n", ret);
 			break;
 			}
-		case 41:
-		case 42:
-		case 43: {
-			int method = menu - 41;
+		case 41: {
+			basic = 1;
+			int onoff = 1;
+
+			fprintf(stderr, "\n	Mock Location (ON: 1 or OFF: 0) Input ==> ");
+			ret = scanf("%d", &onoff);
+
+			ret = location_manager_enable_mock_location(onoff);
+			fprintf(stderr, "Enabling mock test: ret=%d\n", ret);
+
+			ret = location_manager_create(LOCATIONS_METHOD_MOCK, &manager);
+			fprintf(stderr, "location_manager_create (method: %d): %d\n", LOCATIONS_METHOD_MOCK, ret);
+
+			ret = location_manager_set_mock_location(manager, 10, 20, 0, 40, 50, 100);
+			fprintf(stderr, "location_manager_set_mock_location: %d\n", ret);
+			if (ret == LOCATIONS_ERROR_SETTING_OFF) {
+				fprintf(stderr, "Setting for Mock Location is turned OFF!!!\n");
+				break;
+			}
+
+			ret = location_manager_start(manager);
+			fprintf(stderr, "start: %d\n", ret);
+
+			g_timeout_add_seconds(3, test_clear_mock_location, manager);
+
+			g_timeout_add_seconds(10, wait_test, NULL);
+
+			break;
+		}
+		case 42: {
+			basic = 1;
+
+			ret = location_manager_create(LOCATIONS_METHOD_HYBRID, &manager);
+			fprintf(stderr, "location_manager_create (method: %d): %d\n", LOCATIONS_METHOD_HYBRID, ret);
+
+			ret = location_manager_start(manager);
+			fprintf(stderr, "start: %d\n", ret);
+
+			/*
+			int state = 0;
+			ret = location_manager_get_service_state(manager, &state);
+			fprintf(stderr, "the current state: %d, ret = %d\n", state, ret);
+			*/
+
+			g_timeout_add_seconds(5, test_set_mock_location, manager);
+
+			break;
+		}
+		case 51:
+		case 52:
+		case 53: {
+			int method = menu - 51;
 			int onoff = 1;
 
 			fprintf(stderr, "\n	Input ON: 1 or OFF: 0 ==> ");
 			ret = scanf("%d", &onoff);
 
-			ret = enable_method(method, onoff);
-			fprintf(stderr, "Enabling method: [%d], ret=%d\n", method, ret);
+			if (onoff == 0 || onoff == 1) {
+				ret = enable_method(method, onoff);
+				fprintf(stderr, "Enabling method: [%d], ret=%d\n", method, ret);
+			}
 			break;
 			}
-
-		case 51: {
+		case 61: {
 			location_bounds_h hPolyLocationBound = NULL;
 			bool bIsContained = false;
 			int nPolySize = 3;
@@ -595,7 +689,7 @@ static int location_test()
 		return 0;
 	}
 
-	if (menu < 40) {
+	if (menu > 0 && menu < 50) {
 		ret = location_manager_set_service_state_changed_cb(manager, _state_change_cb, (void *)manager);
 		fprintf(stderr, "set_service_state_changed_cb: %d\n", ret);
 
