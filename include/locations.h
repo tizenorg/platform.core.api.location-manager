@@ -373,7 +373,7 @@ int location_manager_start(location_manager_h manager);
  * #location_manager_set_service_state_changed_cb() will be called, with #LOCATIONS_SERVICE_DISABLED as first argument.
  * When that happens, the service is stopped and the user is notified.
  *
- * You can stop and start the location manager as needed.
+ * @remarks You can stop and start the location manager as needed.
  *
  * @param[in] manager		The location manager handle
  * @return 0 on success, otherwise a negative error value
