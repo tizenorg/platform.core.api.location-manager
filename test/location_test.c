@@ -566,7 +566,7 @@ static int location_test()
 			location_coord_list[2].latitude = 30;
 			location_coord_list[2].longitude = 10;
 
-			//Checking coordinates in location boundary
+			/* Checking coordinates in location boundary */
 			location_coords_s testLocationCoordinates;
 			testLocationCoordinates.latitude = 20;
 			testLocationCoordinates.longitude = 12;
@@ -574,7 +574,7 @@ static int location_test()
 
 			fprintf(stderr, "location_bounds_create_polygon: %d\n", nRet);
 
-			bIsContained = location_bounds_contains_coordinates(hPolyLocationBound, testLocationCoordinates);// Target API
+			bIsContained = location_bounds_contains_coordinates(hPolyLocationBound, testLocationCoordinates);
 			fprintf(stderr, "bIsContained: %d\n", bIsContained);
 
 			location_bounds_destroy(hPolyLocationBound);
@@ -603,8 +603,7 @@ static int location_test()
 			ret = location_manager_set_position_updated_cb(manager, _position_updated_cb, interval, (void *)manager);
 			fprintf(stderr, "set_position_updated_cb: %d\n", ret);
 		}
-	}
-	else {
+	} else {
 		test_timer = g_timeout_add_seconds(1, wait_test, NULL);
 	}
 

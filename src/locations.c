@@ -135,7 +135,7 @@ static void __cb_service_disabled(GObject *self, guint status, gpointer userdata
 	location_manager_s *handle = (location_manager_s *) userdata;
 	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])
 		((location_service_state_changed_cb)
-		 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_DISABLED,handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
+		 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_DISABLED, handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
 }
 
 static int __compare_position(gconstpointer a, gconstpointer b)
@@ -430,12 +430,11 @@ EXPORT_API int location_manager_enable_method(const location_method_e method, co
 		}
 		return LOCATIONS_ERROR_NONE;
 
-	} else  {
+	} else {
 		if ((LOCATIONS_METHOD_GPS == method) && (__is_gps_supported() == LOCATIONS_ERROR_NOT_SUPPORTED)) {
 			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x)", LOCATIONS_ERROR_NOT_SUPPORTED);
 			return LOCATIONS_ERROR_NOT_SUPPORTED;
-		}
-		else if ((LOCATIONS_METHOD_WPS == method) && (__is_wps_supported() == LOCATIONS_ERROR_NOT_SUPPORTED)) {
+		} else if ((LOCATIONS_METHOD_WPS == method) && (__is_wps_supported() == LOCATIONS_ERROR_NOT_SUPPORTED)) {
 			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x)", LOCATIONS_ERROR_NOT_SUPPORTED);
 			return LOCATIONS_ERROR_NOT_SUPPORTED;
 		}
