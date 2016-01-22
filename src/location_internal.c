@@ -143,7 +143,7 @@ int __unset_callback(_location_event_e type, location_manager_h manager)
 	location_manager_s *handle = (location_manager_s *) manager;
 	handle->user_cb[type] = NULL;
 	handle->user_data[type] = NULL;
-	LOCATIONS_LOGD("event type : %d. ", type);
+	LOCATIONS_LOGD("event type : %d", type);
 	return LOCATIONS_ERROR_NONE;
 }
 

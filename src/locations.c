@@ -1504,6 +1504,8 @@ EXPORT_API int location_manager_set_mock_location(location_manager_h manager, co
 EXPORT_API int location_manager_clear_mock_location(location_manager_h manager)
 {
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
+	LOCATIONS_NULL_ARG_CHECK(manager);
+
 	location_manager_s *handle = (location_manager_s *) manager;
 	int ret = LOCATION_ERROR_NONE;
 	int enabled;
@@ -1511,7 +1513,7 @@ EXPORT_API int location_manager_clear_mock_location(location_manager_h manager)
 	ret = location_is_enabled_method(LOCATION_METHOD_MOCK, &enabled);
 	if (ret == LOCATIONS_ERROR_NONE) {
 		if (enabled == 0) {
-			return __convert_error_code(LOCATIONS_ERROR_SETTING_OFF);
+			return __convert_error_code(LOCATION_ERROR_SETTING_OFF);
 		}
 	} else {
 		return __convert_error_code(ret);

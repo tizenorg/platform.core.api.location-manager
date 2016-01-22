@@ -376,9 +376,17 @@ void _location_batch_cb(int num_of_location, void *user_data)
 	}
 }
 
-static void __setting_cb(location_method_e method, bool enable, void *user_data)
+static void _setting_cb(location_method_e method, bool enable, void *user_data)
 {
 	fprintf(stderr, "method[%d], enable[%d]\n", method, enable);
+}
+
+void _satellite_updated_cb(int num_of_active, int num_of_inview, time_t timestamp, void *user_data)
+{
+	fprintf(stderr, "-------------------------- satellite updated --------------------------\n");
+	fprintf(stderr, "num_of_active[%d] num_of_inview[%d] timestamp[%ld]\n", num_of_active, num_of_inview, timestamp);
+
+	test_timer = g_timeout_add_seconds(1, wait_test, NULL);
 }
 
 static void print_location_status()
@@ -404,7 +412,7 @@ static int enable_method(location_method_e method, bool enable)
 	int ret = 0;
 	fprintf(stderr, "==== LOCATION Setting changed =====\n");
 
-	location_manager_set_setting_changed_cb(LOCATIONS_METHOD_HYBRID, __setting_cb, NULL);
+	location_manager_set_setting_changed_cb(LOCATIONS_METHOD_HYBRID, _setting_cb, NULL);
 
 	fprintf(stderr, "method[%d], enable[%d]\n", method, enable);
 	ret = location_manager_enable_method(method, enable);
@@ -499,8 +507,14 @@ static int location_test()
 			int method = menu - 1;
 			ret = location_manager_create(method, &manager);
 			fprintf(stderr, "location_manager_create (method: %d): %d\n", method, ret);
+
 			ret = location_manager_start(manager);
 			fprintf(stderr, "start: %d\n", ret);
+
+			if (method == LOCATIONS_METHOD_GPS) {
+				ret = gps_status_set_satellite_updated_cb(manager, _satellite_updated_cb, 1, &manager);
+				fprintf(stderr, "gps_status_set_satellite_updated_cb: %d\n", ret);
+			}
 			break;
 			}
 		case 4:
@@ -716,6 +730,9 @@ static void location_cleanup()
 
 		ret = location_manager_unset_position_updated_cb(manager);
 		fprintf(stderr, "unset_position_updated_cb: %d\n", ret);
+
+		ret = gps_status_unset_satellite_updated_cb(manager);
+		fprintf(stderr, "gps_status_unset_satellite_updated_cb: %d\n", ret);
 
 		ret = location_manager_destroy(manager);
 		fprintf(stderr, "destroy: %d\n", ret);
