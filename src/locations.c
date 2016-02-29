@@ -490,6 +490,11 @@ EXPORT_API int location_manager_create(location_method_e method, location_manage
 			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x) : fail to location feature", LOCATIONS_ERROR_NOT_SUPPORTED);
 			return LOCATIONS_ERROR_NOT_SUPPORTED;
 		}
+	} else if (method == LOCATIONS_METHOD_MOCK) {
+		if (__is_gps_supported() == LOCATIONS_ERROR_NOT_SUPPORTED) {
+			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x) : fail to location feature", LOCATIONS_ERROR_NOT_SUPPORTED);
+			return LOCATIONS_ERROR_NOT_SUPPORTED;
+		}
 	}
 
 	LocationMethod _method = __convert_LocationMethod(method);
