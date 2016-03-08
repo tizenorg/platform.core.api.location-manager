@@ -77,6 +77,6 @@ Test application of Location Manager
 
 %files test
 %manifest test/capi-location-manager-test.manifest
-/usr/share/packages/capi-location-manager-test.xml
+#/usr/share/packages/capi-location-manager-test.xml
 /opt/usr/devel/location/location_test
 %endif

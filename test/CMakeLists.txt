@@ -18,4 +18,4 @@ FOREACH(src ${sources})
 ENDFOREACH()
 
 INSTALL(TARGETS ${src_name} DESTINATION /opt/usr/devel/location/)
-INSTALL(FILES ${fw_test}.xml DESTINATION /usr/share/packages)
+#INSTALL(FILES ${fw_test}.xml DESTINATION /usr/share/packages)
