@@ -1041,8 +1041,6 @@ int gps_status_set_satellite_updated_cb(location_manager_h manager, gps_status_s
 /**
  * @brief	Unregisters the callback function.
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
- * @privlevel public
- * @privilege %http://tizen.org/privilege/location
  * @param[in] manager		The location manager handle
  * @return @c 0 on success, otherwise a negative error value
  * @retval #LOCATIONS_ERROR_NONE				Successful
