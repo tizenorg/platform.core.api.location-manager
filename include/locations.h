@@ -1045,7 +1045,6 @@ int gps_status_set_satellite_updated_cb(location_manager_h manager, gps_status_s
  * @return @c 0 on success, otherwise a negative error value
  * @retval #LOCATIONS_ERROR_NONE				Successful
  * @retval #LOCATIONS_ERROR_INVALID_PARAMETER	Invalid parameter
- * @retval #LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED The application does not have the privilege to call this method
  * @retval #LOCATIONS_ERROR_NOT_SUPPORTED		Not supported
  * @see gps_status_set_satellite_updated_cb()
  */
