@@ -209,7 +209,7 @@ typedef bool(*location_bounds_cb)(location_bounds_h bounds, void *user_data);
 
 /**
  * @brief Called at defined interval with updated location information.
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in] latitude		The updated latitude [-90.0 ~ 90.0] (degrees)
  * @param[in] longitude		The updated longitude [-180.0 ~ 180.0] (degrees)
  * @param[in] altitude		The updated altitude (meters)
@@ -808,7 +808,7 @@ int location_manager_get_distance(double start_latitude, double start_longitude,
 
 /**
  * @brief Registers a callback function to be invoked at minimum interval or minimum distance with updated position information.
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in] manager		The location manager handle
  * @param[in] callback		The callback function to register
  * @param[in] interval		The minimum interval between position updates [1 ~ 120] (seconds)
@@ -826,7 +826,7 @@ int location_manager_set_distance_based_location_changed_cb(location_manager_h m
 
 /**
  * @brief Unregisters the callback function.
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in] manager		The location manager handle
  * @return @c 0 on success, otherwise a negative error value
  * @retval #LOCATIONS_ERROR_NONE				Successful
@@ -838,7 +838,7 @@ int location_manager_unset_distance_based_location_changed_cb(location_manager_h
 
 /**
  * @brief Registers a callback function to be invoked at defined interval with updated location information.
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in] manager		The location manager handle
  * @param[in] callback		The callback function to register
  * @param[in] interval		The interval [1 ~ 120] (seconds)
@@ -855,7 +855,7 @@ int location_manager_set_location_changed_cb(location_manager_h manager, locatio
 
 /**
  * @brief	Unregisters the callback function.
- * @since_tizen 2.4
+ * @since_tizen @if MOBILE 2.4 @elseif WEARABLE 3.0 @endif
  * @param[in] manager		The location manager handle
  * @return @c 0 on success, otherwise a negative error value
  * @retval #LOCATIONS_ERROR_NONE				Successful
