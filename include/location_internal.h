@@ -34,10 +34,10 @@ extern "C" {
 /*
 * Internal Macros
 */
-#define LOCATIONS_LOGD(fmt,args...) LOGD(fmt, ##args)
-#define LOCATIONS_LOGW(fmt,args...) LOGW(fmt, ##args)
-#define LOCATIONS_LOGI(fmt,args...) LOGI(fmt, ##args)
-#define LOCATIONS_LOGE(fmt,args...) LOGE(fmt, ##args)
+#define LOCATIONS_LOGD(fmt, args...) LOGD(fmt, ##args)
+#define LOCATIONS_LOGW(fmt, args...) LOGW(fmt, ##args)
+#define LOCATIONS_LOGI(fmt, args...) LOGI(fmt, ##args)
+#define LOCATIONS_LOGE(fmt, args...) LOGE(fmt, ##args)
 
 #define LOCATIONS_CHECK_CONDITION(condition, error, msg)	\
 	do { \
@@ -56,10 +56,10 @@ extern "C" {
 	} while (0)
 
 #define LOCATIONS_NULL_ARG_CHECK(arg)	\
-	LOCATIONS_CHECK_CONDITION((arg != NULL),LOCATION_BOUNDS_ERROR_INVALID_PARAMETER,"LOCATION_BOUNDS_ERROR_INVALID_PARAMETER") \
+	LOCATIONS_CHECK_CONDITION((arg != NULL), LOCATION_BOUNDS_ERROR_INVALID_PARAMETER, "LOCATION_BOUNDS_ERROR_INVALID_PARAMETER") \
 
 #define LOCATIONS_NOT_SUPPORTED_CHECK(arg)	\
-	LOCATIONS_CHECK_CONDITION((arg == LOCATIONS_ERROR_NONE),LOCATIONS_ERROR_NOT_SUPPORTED,"LOCATIONS_ERROR_NOT_SUPPORTED") \
+	LOCATIONS_CHECK_CONDITION((arg == LOCATIONS_ERROR_NONE), LOCATIONS_ERROR_NOT_SUPPORTED, "LOCATIONS_ERROR_NOT_SUPPORTED") \
 
 typedef enum {
 	_LOCATIONS_EVENT_TYPE_SERVICE_STATE,

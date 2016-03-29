@@ -138,7 +138,7 @@ static void __cb_service_disabled(GObject *self, guint status, gpointer userdata
 	location_manager_s *handle = (location_manager_s *) userdata;
 	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]) {
 		((location_service_state_changed_cb)
-		 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_DISABLED,handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
+		 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_DISABLED, handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
 	}
 }
 
