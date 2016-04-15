@@ -1,6 +1,6 @@
 Name: capi-location-manager
 Summary: A Location Manager library in Tizen Native API
-Version: 0.7.0
+Version: 0.7.1
 Release: 1
 Group: Location/API
 License: Apache-2.0

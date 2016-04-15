@@ -31,9 +31,8 @@ static void __cb_batch_updated(GObject *self, guint num_of_location, gpointer us
 	LOCATIONS_LOGD("Batch callback function has been invoked.");
 	location_manager_s *handle = (location_manager_s *) userdata;
 
-	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_BATCH]) {
+	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_BATCH])
 		((location_batch_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_BATCH])(num_of_location, handle->user_data[_LOCATIONS_EVENT_TYPE_BATCH]);
-	}
 }
 
 /*/////////////////////////////////////// */
@@ -43,10 +42,11 @@ static void __cb_batch_updated(GObject *self, guint num_of_location, gpointer us
 EXPORT_API int location_manager_set_location_batch_cb(location_manager_h manager, location_batch_cb callback, int batch_interval, int batch_period, void *user_data)
 {
 	LOCATIONS_LOGD("location_manager_set_location_batch_cb");
-	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
+	LOCATIONS_NOT_SUPPORTED_CHECK(__is_batch_supported());
 
-	LOCATIONS_CHECK_CONDITION(batch_interval >= 1 && batch_interval <= 120, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
-	LOCATIONS_CHECK_CONDITION(batch_period >= 120 && batch_period <= 600, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
+	LOCATIONS_CHECK_CONDITION(batch_interval >= 1 && batch_interval <= 255, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
+	LOCATIONS_CHECK_CONDITION(batch_period >= 1 && batch_period <= 60000, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
+	LOCATIONS_CHECK_CONDITION(batch_interval <= batch_period, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(callback);
 	location_manager_s *handle = (location_manager_s *) manager;
@@ -58,33 +58,30 @@ EXPORT_API int location_manager_set_location_batch_cb(location_manager_h manager
 EXPORT_API int location_manager_unset_location_batch_cb(location_manager_h manager)
 {
 	LOCATIONS_LOGD("location_manager_unset_location_batch_cb");
-	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
+	LOCATIONS_NOT_SUPPORTED_CHECK(__is_batch_supported());
 	return __unset_callback(_LOCATIONS_EVENT_TYPE_BATCH, manager);
 }
 
 EXPORT_API int location_manager_start_batch(location_manager_h manager)
 {
 	LOCATIONS_LOGD("location_manager_start_batch");
-	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
+	LOCATIONS_NOT_SUPPORTED_CHECK(__is_batch_supported());
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
 
 	if (LOCATIONS_METHOD_GPS == handle->method) {
-		if (!handle->sig_id[_LOCATION_SIGNAL_BATCH_UPDATED]) {
+		if (!handle->sig_id[_LOCATION_SIGNAL_BATCH_UPDATED])
 			handle->sig_id[_LOCATION_SIGNAL_BATCH_UPDATED] = g_signal_connect(handle->object, "batch-updated", G_CALLBACK(__cb_batch_updated), handle);
-		}
 	} else {
 		LOCATIONS_LOGE("method is not GPS");
 	}
 
-	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_BATCH] != NULL) {
-		LOCATIONS_LOGI("batch status set : Start");
-	}
+	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_BATCH] != NULL)
+		LOCATIONS_LOGD("batch status set : Start");
 
 	int ret = location_start_batch(handle->object);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
 
 	return LOCATIONS_ERROR_NONE;
 }
@@ -92,7 +89,7 @@ EXPORT_API int location_manager_start_batch(location_manager_h manager)
 EXPORT_API int location_manager_stop_batch(location_manager_h manager)
 {
 	LOCATIONS_LOGD("location_manager_stop_batch");
-	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
+	LOCATIONS_NOT_SUPPORTED_CHECK(__is_batch_supported());
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
 
@@ -106,9 +103,8 @@ EXPORT_API int location_manager_stop_batch(location_manager_h manager)
 	}
 
 	int ret = location_stop_batch(handle->object);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
 
 	return LOCATIONS_ERROR_NONE;
 }
@@ -116,7 +112,7 @@ EXPORT_API int location_manager_stop_batch(location_manager_h manager)
 EXPORT_API int location_manager_foreach_location_batch(location_manager_h manager, location_batch_get_location_cb callback, void *user_data)
 {
 	LOCATIONS_LOGD("location_manager_foreach_location_batch");
-	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
+	LOCATIONS_NOT_SUPPORTED_CHECK(__is_batch_supported());
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	LOCATIONS_NULL_ARG_CHECK(callback);
 	location_manager_s *handle = (location_manager_s *) manager;
@@ -132,8 +128,7 @@ EXPORT_API int location_manager_foreach_location_batch(location_manager_h manage
 			return LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED;
 		}
 
-		LOCATIONS_LOGE("LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE(0x%08x) : batch is NULL ",
-		               LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE);
+		LOCATIONS_LOGE("LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE(0x%08x) : batch is NULL ", LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE);
 		return LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
 	}
 
@@ -149,9 +144,8 @@ EXPORT_API int location_manager_foreach_location_batch(location_manager_h manage
 		guint timestamp;
 
 		location_get_batch_details(batch, i, &latitude, &longitude, &altitude, &speed, &direction, &h_accuracy, &v_accuracy, &timestamp);
-		if (callback(latitude, longitude, altitude, speed, direction, h_accuracy, v_accuracy, timestamp, user_data) != TRUE) {
+		if (callback(latitude, longitude, altitude, speed, direction, h_accuracy, v_accuracy, timestamp, user_data) != TRUE)
 			break;
-		}
 	}
 	location_batch_free(batch);
 	batch = NULL;

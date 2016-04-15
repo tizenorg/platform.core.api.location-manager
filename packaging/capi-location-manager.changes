@@ -1,10 +1,23 @@
-[Version]	capi-location-manager_0.6.0
-[Date]		29 May 2015
-[Title] 	[ACR-225][2.4][location-manager][Add] Turn Location setting on or off; enum LOCATIONS_SERVICE_HOST_SETTING_OFF was deleted.
+[Version]	capi-location-manager_0.7.1
+[Date]		15 Apr 2016
+[Title]		Change batch range to support device behavior
+[Developer]	Kyoungjun Sung <kj7.sung@samsung.com>
+
+================================================================================
+
+[Version]	capi-location-manager_0.7.0
+[Date]		21 Jan 2016
+[Title]		Added mock location APIs
 [Developer]	Young-Ae Kang <youngae.kang@samsung.com>
 
 ================================================================================
 
+[Version]	capi-location-manager_0.6.0
+[Date]		29 May 2015
+[Title]		[ACR-225][2.4][location-manager][Add] Turn Location setting on or off; enum LOCATIONS_SERVICE_HOST_SETTING_OFF was deleted.
+[Developer]	Young-Ae Kang <youngae.kang@samsung.com>
+
+================================================================================
 
 [Version]	capi-location-manager_0.5.2
 [Date]		17 Apr 2015

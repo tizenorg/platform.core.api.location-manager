@@ -27,18 +27,18 @@ static location_method_e __convert_location_method_e(LocationMethod method)
 {
 	location_method_e _method = LOCATIONS_METHOD_NONE;
 	switch (method) {
-		case LOCATION_METHOD_HYBRID:
-			_method = LOCATIONS_METHOD_HYBRID;
-			break;
-		case LOCATION_METHOD_GPS:
-			_method = LOCATIONS_METHOD_GPS;
-			break;
-		case LOCATION_METHOD_WPS:
-			_method = LOCATIONS_METHOD_WPS;
-			break;
-		case LOCATION_METHOD_NONE:
-		default:
-			break;
+	case LOCATION_METHOD_HYBRID:
+		_method = LOCATIONS_METHOD_HYBRID;
+		break;
+	case LOCATION_METHOD_GPS:
+		_method = LOCATIONS_METHOD_GPS;
+		break;
+	case LOCATION_METHOD_WPS:
+		_method = LOCATIONS_METHOD_WPS;
+		break;
+	case LOCATION_METHOD_NONE:
+	default:
+		break;
 	}
 	return _method;
 }
@@ -47,22 +47,22 @@ static LocationMethod __convert_LocationMethod(location_method_e method)
 {
 	LocationMethod _method = LOCATION_METHOD_NONE;
 	switch (method) {
-		case LOCATIONS_METHOD_HYBRID:
-			_method = LOCATION_METHOD_HYBRID;
-			break;
-		case LOCATIONS_METHOD_GPS:
-			_method = LOCATION_METHOD_GPS;
-			break;
-		case LOCATIONS_METHOD_WPS:
-			_method = LOCATION_METHOD_WPS;
-			break;
-		case LOCATIONS_METHOD_MOCK:
-			_method = LOCATION_METHOD_MOCK;
-			break;
-		case LOCATIONS_METHOD_NONE:
-		default:
-			_method = LOCATION_METHOD_NONE;
-			break;
+	case LOCATIONS_METHOD_HYBRID:
+		_method = LOCATION_METHOD_HYBRID;
+		break;
+	case LOCATIONS_METHOD_GPS:
+		_method = LOCATION_METHOD_GPS;
+		break;
+	case LOCATIONS_METHOD_WPS:
+		_method = LOCATION_METHOD_WPS;
+		break;
+	case LOCATIONS_METHOD_MOCK:
+		_method = LOCATION_METHOD_MOCK;
+		break;
+	case LOCATIONS_METHOD_NONE:
+	default:
+		_method = LOCATION_METHOD_NONE;
+		break;
 	}
 	return _method;
 }
@@ -164,9 +164,8 @@ static void __cb_service_status_changed(GObject *self, guint status, gpointer us
 
 static int __compare_position(gconstpointer a, gconstpointer b)
 {
-	if (location_position_equal((LocationPosition *) a, (LocationPosition *)b) == TRUE) {
+	if (location_position_equal((LocationPosition *) a, (LocationPosition *)b) == TRUE)
 		return 0;
-	}
 
 	return -1;
 }
@@ -177,64 +176,63 @@ static int __boundary_compare(LocationBoundary *bound1, LocationBoundary *bound2
 
 	if (bound1->type == bound2->type) {
 		switch (bound1->type) {
-			case LOCATION_BOUNDARY_CIRCLE:
-				if (location_position_equal(bound1->circle.center, bound2->circle.center) && bound1->circle.radius == bound2->circle.radius) {
-					ret = 0;
-				}
-				break;
-			case LOCATION_BOUNDARY_RECT:
-				if (location_position_equal(bound1->rect.left_top, bound2->rect.left_top) && location_position_equal(bound1->rect.right_bottom, bound2->rect.right_bottom)) {
-					ret = 0;
-				}
-				break;
-			case LOCATION_BOUNDARY_POLYGON: {
-					GList *boundary1_next = NULL;
-					GList *boundary2_start = NULL, *boundary2_prev = NULL, *boundary2_next = NULL;
-					if (g_list_length(bound1->polygon.position_list) != g_list_length(bound2->polygon.position_list)) {
-						return -1;
-					}
+		case LOCATION_BOUNDARY_CIRCLE:
+			if (location_position_equal(bound1->circle.center, bound2->circle.center) && bound1->circle.radius == bound2->circle.radius)
+				ret = 0;
 
-					boundary2_start = g_list_find_custom(bound2->polygon.position_list, g_list_nth_data(bound1->polygon.position_list, 0), (GCompareFunc) __compare_position);
-					if (boundary2_start == NULL) return -1;
+			break;
+		case LOCATION_BOUNDARY_RECT:
+			if (location_position_equal(bound1->rect.left_top, bound2->rect.left_top) && location_position_equal(bound1->rect.right_bottom, bound2->rect.right_bottom))
+				ret = 0;
 
-					boundary2_prev = g_list_previous(boundary2_start);
-					boundary2_next = g_list_next(boundary2_start);
+			break;
+		case LOCATION_BOUNDARY_POLYGON: {
+				GList *boundary1_next = NULL;
+				GList *boundary2_start = NULL, *boundary2_prev = NULL, *boundary2_next = NULL;
+				if (g_list_length(bound1->polygon.position_list) != g_list_length(bound2->polygon.position_list))
+					return -1;
 
-					if (boundary2_prev == NULL) boundary2_prev = g_list_last(bound2->polygon.position_list);
-					if (boundary2_next == NULL) boundary2_next = g_list_first(bound2->polygon.position_list);
+				boundary2_start = g_list_find_custom(bound2->polygon.position_list, g_list_nth_data(bound1->polygon.position_list, 0), (GCompareFunc) __compare_position);
+				if (boundary2_start == NULL) return -1;
 
-					boundary1_next = g_list_next(bound1->polygon.position_list);
-					if (boundary1_next != NULL && boundary2_prev != NULL &&
-						location_position_equal((LocationPosition *)boundary1_next->data, (LocationPosition *)boundary2_prev->data) == TRUE) {
+				boundary2_prev = g_list_previous(boundary2_start);
+				boundary2_next = g_list_next(boundary2_start);
+
+				if (boundary2_prev == NULL) boundary2_prev = g_list_last(bound2->polygon.position_list);
+				if (boundary2_next == NULL) boundary2_next = g_list_first(bound2->polygon.position_list);
+
+				boundary1_next = g_list_next(bound1->polygon.position_list);
+				if (boundary1_next != NULL && boundary2_prev != NULL &&
+					location_position_equal((LocationPosition *)boundary1_next->data, (LocationPosition *)boundary2_prev->data) == TRUE) {
+					boundary1_next = g_list_next(boundary1_next);
+					while (boundary1_next) {
+						boundary2_prev = g_list_previous(boundary2_prev);
+						if (boundary2_prev == NULL) boundary2_prev = g_list_last(bound2->polygon.position_list);
+						if (location_position_equal((LocationPosition *)boundary1_next->data, (LocationPosition *) boundary2_prev->data) == FALSE)
+							return -1;
+
 						boundary1_next = g_list_next(boundary1_next);
-						while (boundary1_next) {
-							boundary2_prev = g_list_previous(boundary2_prev);
-							if (boundary2_prev == NULL) boundary2_prev = g_list_last(bound2->polygon.position_list);
-							if (location_position_equal((LocationPosition *)boundary1_next->data, (LocationPosition *) boundary2_prev->data) == FALSE) {
-								return -1;
-							}
-							boundary1_next = g_list_next(boundary1_next);
-						}
-						ret = 0;
-					} else if (boundary1_next != NULL && boundary2_next != NULL &&
-								location_position_equal((LocationPosition *)boundary1_next->data, (LocationPosition *)boundary2_next->data) == TRUE) {
-						boundary1_next = g_list_next(boundary1_next);
-						while (boundary1_next) {
-							boundary2_next = g_list_next(boundary2_next);
-							if (boundary2_next == NULL) boundary2_next = g_list_first(bound2->polygon.position_list);
-							if (location_position_equal((LocationPosition *)boundary1_next->data, (LocationPosition *) boundary2_next->data) == FALSE) {
-								return -1;
-							}
-							boundary1_next = g_list_next(boundary1_next);
-						}
-						ret = 0;
-					} else {
-						return -1;
 					}
-					break;
+					ret = 0;
+				} else if (boundary1_next != NULL && boundary2_next != NULL &&
+							location_position_equal((LocationPosition *)boundary1_next->data, (LocationPosition *)boundary2_next->data) == TRUE) {
+					boundary1_next = g_list_next(boundary1_next);
+					while (boundary1_next) {
+						boundary2_next = g_list_next(boundary2_next);
+						if (boundary2_next == NULL) boundary2_next = g_list_first(bound2->polygon.position_list);
+						if (location_position_equal((LocationPosition *)boundary1_next->data, (LocationPosition *) boundary2_next->data) == FALSE)
+							return -1;
+
+						boundary1_next = g_list_next(boundary1_next);
+					}
+					ret = 0;
+				} else {
+					return -1;
 				}
-			default:
 				break;
+			}
+		default:
+			break;
 		}
 	}
 	return ret;
@@ -259,9 +257,9 @@ static void __cb_zone_in(GObject *self, gpointer boundary, gpointer position, gp
 		bounds = (location_bounds_s *)bounds_list->data;
 		if (__boundary_compare(boundary, bounds->boundary) == 0) {
 			LOCATIONS_LOGD("Find zone in boundary");
-			if (bounds->user_cb) {
+			if (bounds->user_cb)
 				((location_bounds_state_changed_cb) bounds->user_cb)(LOCATIONS_BOUNDARY_IN, bounds->user_data);
-			}
+
 			break;
 		}
 		bounds_list = g_list_next(bounds_list);
@@ -288,9 +286,9 @@ static void __cb_zone_out(GObject *self, gpointer boundary, gpointer position, g
 		bounds = (location_bounds_s *)bounds_list->data;
 		if (__boundary_compare(boundary, bounds->boundary) == 0) {
 			LOCATIONS_LOGD("Find zone out boundary");
-			if (bounds->user_cb) {
+			if (bounds->user_cb)
 				((location_bounds_state_changed_cb) bounds->user_cb)(LOCATIONS_BOUNDARY_OUT, bounds->user_data);
-			}
+
 			break;
 		}
 		bounds_list = g_list_next(bounds_list);
@@ -364,9 +362,8 @@ static void __setting_changed_cb(LocationMethod method, gboolean enable, void *u
 		return;
 	}
 
-	if (_setting_changed[_method].callback != NULL) {
+	if (_setting_changed[_method].callback != NULL)
 		_setting_changed[_method].callback(_method, enable, _setting_changed[_method].user_data);
-	}
 }
 
 /*/////////////////////////////////////// */
@@ -423,9 +420,8 @@ EXPORT_API int location_manager_is_enabled_method(location_method_e method, bool
 			return LOCATIONS_ERROR_INCORRECT_METHOD;
 		return __convert_error_code(ret);
 	}
-	if (is_enabled_val == -1) {
+	if (is_enabled_val == -1)
 		return TIZEN_ERROR_PERMISSION_DENIED;
-	}
 
 	*enable = (is_enabled_val == 0) ? FALSE : TRUE;
 	return LOCATIONS_ERROR_NONE;
@@ -580,9 +576,9 @@ EXPORT_API int location_manager_destroy(location_manager_h manager)
 	}
 
 	int ret = location_free(handle->object);
-	if (ret != LOCATIONS_ERROR_NONE) {
+	if (ret != LOCATIONS_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
+
 	free(handle);
 	return LOCATIONS_ERROR_NONE;
 }
@@ -613,9 +609,9 @@ EXPORT_API int location_manager_start(location_manager_h manager)
 	}
 
 	int ret = location_start(handle->object);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
+
 	return LOCATIONS_ERROR_NONE;
 }
 
@@ -637,14 +633,13 @@ EXPORT_API int location_manager_request_single_location(location_manager_h manag
 		handle->sig_id[_LOCATION_SIGNAL_LOCATION_UPDATED] = g_signal_connect(handle->object, "location-updated", G_CALLBACK(__cb_location_updated), handle);
 
 	ret = __set_callback(_LOCATIONS_EVENT_TYPE_LOCATION, manager, callback, user_data);
-	if (ret != LOCATIONS_ERROR_NONE) {
+	if (ret != LOCATIONS_ERROR_NONE)
 		return ret;
-	}
 
 	ret = location_request_single_location(handle->object, timeout);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
+
 	return LOCATIONS_ERROR_NONE;
 }
 
@@ -674,9 +669,9 @@ EXPORT_API int location_manager_stop(location_manager_h manager)
 	}
 
 	int ret = location_stop(handle->object);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
+
 	return LOCATIONS_ERROR_NONE;
 }
 
@@ -690,9 +685,9 @@ EXPORT_API int location_manager_add_boundary(location_manager_h manager, locatio
 	location_manager_s *handle = (location_manager_s *) manager;
 	location_bounds_s *bound_handle = (location_bounds_s *) bounds;
 	int ret = location_boundary_add(handle->object, bound_handle->boundary);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
+
 	bound_handle->is_added = TRUE;
 	handle->bounds_list = g_list_append(handle->bounds_list, bound_handle);
 	return LOCATIONS_ERROR_NONE;
@@ -708,9 +703,9 @@ EXPORT_API int location_manager_remove_boundary(location_manager_h manager, loca
 	location_manager_s *handle = (location_manager_s *) manager;
 	location_bounds_s *bound_handle = (location_bounds_s *) bounds;
 	int ret = location_boundary_remove(handle->object, bound_handle->boundary);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
+
 	handle->bounds_list = g_list_remove(handle->bounds_list, bound_handle);
 	bound_handle->is_added = FALSE;
 	return LOCATIONS_ERROR_NONE;
@@ -728,9 +723,9 @@ EXPORT_API int location_manager_foreach_boundary(location_manager_h manager, loc
 	handle->user_data[_LOCATIONS_EVENT_TYPE_FOREACH_BOUNDS] = user_data;
 	handle->is_continue_foreach_bounds = TRUE;
 	int ret = location_boundary_foreach(handle->object, __foreach_boundary, handle);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
+
 	return LOCATIONS_ERROR_NONE;
 }
 
@@ -745,26 +740,25 @@ EXPORT_API int location_manager_get_method(location_manager_h manager, location_
 	LocationMethod _method = LOCATION_METHOD_NONE;
 	g_object_get(handle->object, "method", &_method, NULL);
 	switch (_method) {
-		case LOCATION_METHOD_NONE:
-			*method = LOCATIONS_METHOD_NONE;
-			break;
-		case LOCATION_METHOD_HYBRID:
-			*method = LOCATIONS_METHOD_HYBRID;
-			break;
-		case LOCATION_METHOD_GPS:
-			*method = LOCATIONS_METHOD_GPS;
-			break;
-		case LOCATION_METHOD_WPS:
-			*method = LOCATIONS_METHOD_WPS;
-			break;
-		case LOCATION_METHOD_MOCK:
-			*method = LOCATIONS_METHOD_MOCK;
-			break;
-		default: {
-				LOCATIONS_LOGE("LOCATIONS_ERROR_INVALID_PARAMETER(0x%08x) : Out of range (location_method_e) - method : %d ",
-								LOCATIONS_ERROR_INVALID_PARAMETER, method);
-				return LOCATIONS_ERROR_INVALID_PARAMETER;
-			}
+	case LOCATION_METHOD_NONE:
+		*method = LOCATIONS_METHOD_NONE;
+		break;
+	case LOCATION_METHOD_HYBRID:
+		*method = LOCATIONS_METHOD_HYBRID;
+		break;
+	case LOCATION_METHOD_GPS:
+		*method = LOCATIONS_METHOD_GPS;
+		break;
+	case LOCATION_METHOD_WPS:
+		*method = LOCATIONS_METHOD_WPS;
+		break;
+	case LOCATION_METHOD_MOCK:
+		*method = LOCATIONS_METHOD_MOCK;
+		break;
+	default: {
+		LOCATIONS_LOGE("[LOCATIONS_ERROR_INVALID_PARAMETER] method : %d ", method);
+			return LOCATIONS_ERROR_INVALID_PARAMETER;
+		}
 	}
 	return LOCATIONS_ERROR_NONE;
 }
@@ -785,9 +779,8 @@ EXPORT_API int location_manager_get_position(location_manager_h manager, double 
 	LocationPosition *pos = NULL;
 	LocationAccuracy *acc = NULL;
 	ret = location_get_position(handle->object, &pos, &acc);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
 
 	if (pos->status == LOCATION_STATUS_NO_FIX) {
 		return LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
@@ -824,9 +817,8 @@ EXPORT_API int location_manager_get_location(location_manager_h manager, double 
 	LocationVelocity *vel = NULL;
 	LocationAccuracy *acc = NULL;
 	ret = location_get_position_ext(handle->object, &pos, &vel, &acc);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
 
 	if (pos->status == LOCATION_STATUS_NO_FIX) {
 		return __convert_error_code(LOCATION_ERROR_NOT_AVAILABLE);
@@ -864,9 +856,8 @@ EXPORT_API int location_manager_get_velocity(location_manager_h manager, double 
 	LocationVelocity *vel = NULL;
 	LocationAccuracy *acc = NULL;
 	ret = location_get_velocity(handle->object, &vel, &acc);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
 
 	*climb = vel->climb;
 	*direction = vel->direction;
@@ -892,13 +883,11 @@ EXPORT_API int location_manager_get_accuracy(location_manager_h manager, locatio
 	LocationPosition *pos = NULL;
 	LocationAccuracy *acc = NULL;
 	ret = location_get_position(handle->object, &pos, &acc);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
 
-	if (acc == NULL) {
+	if (acc == NULL)
 		return __convert_error_code(LOCATION_ERROR_NOT_AVAILABLE);
-	}
 
 	*level = acc->level;
 	*horizontal = acc->horizontal_accuracy;
@@ -924,9 +913,8 @@ EXPORT_API int location_manager_get_last_position(location_manager_h manager, do
 	LocationPosition *last_pos = NULL;
 	LocationAccuracy *last_acc = NULL;
 	ret = location_get_last_position(handle->object, &last_pos, &last_acc);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
 
 	if (last_pos->status == LOCATION_STATUS_NO_FIX) {
 		return LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
@@ -964,9 +952,8 @@ EXPORT_API int location_manager_get_last_location(location_manager_h manager, do
 	LocationVelocity *last_vel = NULL;
 	LocationAccuracy *last_acc = NULL;
 	ret = location_get_last_position_ext(handle->object, &last_pos, &last_vel, &last_acc);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
 
 	if (last_pos->status == LOCATION_STATUS_NO_FIX) {
 		return LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
@@ -1004,9 +991,8 @@ EXPORT_API int location_manager_get_last_velocity(location_manager_h manager, do
 	LocationVelocity *last_vel = NULL;
 	LocationAccuracy *last_acc = NULL;
 	ret = location_get_last_velocity(handle->object, &last_vel, &last_acc);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
 
 	*climb = last_vel->climb;
 	*direction = last_vel->direction;
@@ -1031,9 +1017,8 @@ EXPORT_API int location_manager_get_last_accuracy(location_manager_h manager, lo
 	LocationPosition *last_pos = NULL;
 	LocationAccuracy *last_acc = NULL;
 	ret = location_get_last_position(handle->object, &last_pos, &last_acc);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
 
 	*level = last_acc->level;
 	*horizontal = last_acc->horizontal_accuracy;
@@ -1058,16 +1043,16 @@ EXPORT_API int location_manager_get_accessibility_state(location_accessibility_s
 	}
 
 	switch (auth) {
-		case LOCATION_ACCESS_DENIED:
-			*state = LOCATIONS_ACCESS_STATE_DENIED;
-			break;
-		case LOCATION_ACCESS_ALLOWED:
-			*state = LOCATIONS_ACCESS_STATE_ALLOWED;
-			break;
-		case LOCATION_ACCESS_NONE:
-		default:
-			*state = LOCATIONS_ACCESS_STATE_NONE;
-			break;
+	case LOCATION_ACCESS_DENIED:
+		*state = LOCATIONS_ACCESS_STATE_DENIED;
+		break;
+	case LOCATION_ACCESS_ALLOWED:
+		*state = LOCATIONS_ACCESS_STATE_ALLOWED;
+		break;
+	case LOCATION_ACCESS_NONE:
+	default:
+		*state = LOCATIONS_ACCESS_STATE_NONE;
+		break;
 	}
 
 	return LOCATIONS_ERROR_NONE;
@@ -1189,17 +1174,15 @@ EXPORT_API int location_manager_set_setting_changed_cb(location_method_e method,
 	LocationMethod _method = __convert_LocationMethod(method);
 	int ret = LOCATION_ERROR_NONE;
 
-	if (_method == LOCATION_METHOD_NONE) {
+	if (_method == LOCATION_METHOD_NONE)
 		return __convert_error_code(LOCATION_ERROR_PARAMETER);
-	}
 
 	g_location_setting[_method].callback = callback;
 	g_location_setting[_method].user_data = user_data;
 
 	ret = location_add_setting_notify(_method, __setting_changed_cb, &g_location_setting);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
 
 	return LOCATIONS_ERROR_NONE;
 }
@@ -1211,9 +1194,8 @@ EXPORT_API int location_manager_unset_setting_changed_cb(location_method_e metho
 	LocationMethod _method = __convert_LocationMethod(method);
 	int ret = LOCATION_ERROR_NONE;
 
-	if (_method == LOCATION_METHOD_NONE) {
+	if (_method == LOCATION_METHOD_NONE)
 		return __convert_error_code(LOCATION_ERROR_PARAMETER);
-	}
 
 	ret = location_ignore_setting_notify(_method, __setting_changed_cb);
 	if (ret != LOCATION_ERROR_NONE) {
@@ -1244,9 +1226,8 @@ EXPORT_API int location_manager_get_distance(double start_latitude, double start
 	LocationPosition *end = location_position_new(0, end_latitude, end_longitude, 0, LOCATION_STATUS_2D_FIX);
 
 	ret = location_get_distance(start, end, &u_distance);
-	if (ret != LOCATION_ERROR_NONE) {
+	if (ret != LOCATION_ERROR_NONE)
 		return __convert_error_code(ret);
-	}
 
 	*distance = (double)u_distance;
 
@@ -1441,9 +1422,8 @@ EXPORT_API int gps_status_foreach_last_satellites_in_view(location_manager_h man
 		guint azimuth;
 		gint snr;
 		location_satellite_get_satellite_details(last_sat, i, &prn, &used, &elevation, &azimuth, &snr);
-		if (callback(azimuth, elevation, prn, snr, used, user_data) != TRUE) {
+		if (callback(azimuth, elevation, prn, snr, used, user_data) != TRUE)
 			break;
-		}
 	}
 	location_satellite_free(last_sat);
 	return LOCATIONS_ERROR_NONE;
@@ -1483,10 +1463,8 @@ EXPORT_API int location_manager_set_mock_location(location_manager_h manager, co
 	ret = location_is_enabled_method(LOCATION_METHOD_MOCK, &enabled);
 	LOCATIONS_LOGD("enable: %d, ret: %d", enabled, ret);
 	if (ret == LOCATIONS_ERROR_NONE) {
-		if (enabled == 0) {
+		if (enabled == 0)
 			return __convert_error_code(LOCATION_ERROR_SETTING_OFF);
-		}
-
 	} else {
 		return __convert_error_code(ret);
 	}
@@ -1524,9 +1502,8 @@ EXPORT_API int location_manager_clear_mock_location(location_manager_h manager)
 
 	ret = location_is_enabled_method(LOCATION_METHOD_MOCK, &enabled);
 	if (ret == LOCATIONS_ERROR_NONE) {
-		if (enabled == 0) {
+		if (enabled == 0)
 			return __convert_error_code(LOCATION_ERROR_SETTING_OFF);
-		}
 	} else {
 		return __convert_error_code(ret);
 	}
@@ -1534,89 +1511,3 @@ EXPORT_API int location_manager_clear_mock_location(location_manager_h manager)
 	ret = location_clear_mock_location(handle->object);
 	return __convert_error_code(ret);
 }
-
-
-#if 0
-/**
- * @brief Gets the state of location service.
- * @since_tizen 3.0
- * @param[in] manager		The location manager handle
- * @param[out] state		The current state of location service
- * @return 0 on success, otherwise a negative error value
- * @retval #LOCATIONS_ERROR_NONE Successful
- * @retval #LOCATIONS_ERROR_INVALID_PARAMETER	Invalid parameter
- * @retval #LOCATIONS_ERROR_NOT_SUPPORTED	Not supported
- * @see location_manager_create()
- * @see location_manager_set_setting_changed_cb()
- * @see location_manager_unset_setting_changed_cb()
- */
-int location_manager_get_service_state(location_manager_h manager, location_service_state_e *state);
-
-EXPORT_API int location_manager_get_service_state(location_manager_h manager, location_service_state_e *state)
-{
-	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
-	LOCATIONS_NULL_ARG_CHECK(manager);
-	LOCATIONS_NULL_ARG_CHECK(state);
-
-	location_manager_s *handle = (location_manager_s *) manager;
-
-	int service_state = -1;
-
-	int ret = location_get_service_state(handle->object, &service_state);
-	if (ret != LOCATION_ERROR_NONE) {
-		if (ret == LOCATION_ERROR_NOT_SUPPORTED)
-			return LOCATIONS_ERROR_INCORRECT_METHOD;
-		return __convert_error_code(ret);
-	}
-
-	switch (service_state) {
-		case -1:
-			ret = LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
-			*state = LOCATIONS_SERVICE_DISABLED;
-			break;
-		case 0:
-			*state = LOCATIONS_SERVICE_DISABLED;
-			break;
-		case 1:
-			*state = LOCATIONS_SERVICE_ENABLED;
-			break;
-		default:
-			*state = LOCATIONS_SERVICE_ERROR;
-			break;
-
-	}
-
-	return ret;
-}
-
-EXPORT_API int location_add_test_provider(const LocationMethod method, const int enable)
-{
-	int ret = 0;
-	char *_key = NULL;
-
-#ifndef TIZEN_PROFILE_TV
-	ret = location_check_privilege(LOCATION_ENABLE_PRIVILEGE);
-	if (ret != LOCATION_ERROR_NONE) {
-		LOCATION_LOGE("Cannot use location service for privacy[%d]", ret);
-		return LOCATION_ERROR_NOT_ALLOWED;
-	}
-#endif
-
-	if (method == LOCATION_METHOD_MOCK) {
-		_key = __convert_setting_key(method);
-		if (!_key) {
-			LOCATION_LOGE("Invalid method[%d]", method);
-			return LOCATION_ERROR_NOT_SUPPORTED;
-		}
-		ret = vconf_set_int(_key, enable);
-		if (ret != VCONF_OK) {
-			LOCATION_SECLOG("vconf_set_int failed [%s], ret=[%d]", _key, ret);
-			g_free(_key);
-			return LOCATION_ERROR_NOT_ALLOWED;
-		}
-
-		g_free(_key);
-	}
-	return ret;
-}
-#endif
