@@ -35,17 +35,17 @@ static location_bounds_type_e __convert_bounds_type(LocationBoundaryType type)
 {
 	location_bounds_type_e ret;
 	switch (type) {
-		case LOCATION_BOUNDARY_CIRCLE:
-			ret = LOCATION_BOUNDS_CIRCLE;
-			break;
-		case LOCATION_BOUNDARY_POLYGON:
-			ret = LOCATION_BOUNDS_POLYGON;
-			break;
-		case LOCATION_BOUNDARY_NONE:
-		case LOCATION_BOUNDARY_RECT:
-		default:
-			ret = LOCATION_BOUNDS_RECT;
-			break;
+	case LOCATION_BOUNDARY_CIRCLE:
+		ret = LOCATION_BOUNDS_CIRCLE;
+		break;
+	case LOCATION_BOUNDARY_POLYGON:
+		ret = LOCATION_BOUNDS_POLYGON;
+		break;
+	case LOCATION_BOUNDARY_NONE:
+	case LOCATION_BOUNDARY_RECT:
+	default:
+		ret = LOCATION_BOUNDS_RECT;
+		break;
 	}
 	return ret;
 }
@@ -60,13 +60,11 @@ EXPORT_API int location_bounds_create_rect(location_coords_s top_left, location_
 	LOCATIONS_CHECK_CONDITION(bottom_right.longitude >= -180 && bottom_right.longitude <= 180, LOCATION_BOUNDS_ERROR_INVALID_PARAMETER, "LOCATION_BOUNDS_ERROR_INVALID_PARAMETER");
 
 	if ((bottom_right.longitude - top_left.longitude) < 180 && (bottom_right.longitude - top_left.longitude) > -180) {
-		if (bottom_right.longitude <= top_left.longitude || bottom_right.latitude >= top_left.latitude) {
+		if (bottom_right.longitude <= top_left.longitude || bottom_right.latitude >= top_left.latitude)
 			return LOCATION_BOUNDS_ERROR_INVALID_PARAMETER;
-		}
 	} else {
-		if (bottom_right.latitude >= top_left.latitude) {
+		if (bottom_right.latitude >= top_left.latitude)
 			return LOCATION_BOUNDS_ERROR_INVALID_PARAMETER;
-		}
 	}
 
 	LocationPosition *lt = location_position_new(0, top_left.latitude, top_left.longitude, 0, LOCATION_STATUS_2D_FIX);

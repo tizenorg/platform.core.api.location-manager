@@ -120,6 +120,7 @@ int __convert_error_code(int code);
 int __is_gps_supported(void);
 int __is_gps_satellite_supported(void);
 int __is_wps_supported(void);
+int __is_batch_supported(void);
 int __is_location_supported(void);
 int __set_callback(_location_event_e type, location_manager_h manager, void *callback, void *user_data);
 int __unset_callback(_location_event_e type, location_manager_h manager);
