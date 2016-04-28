@@ -89,6 +89,8 @@ int location_manager_stop_batch(location_manager_h manager);
  */
 int location_manager_foreach_location_batch(location_manager_h manager, location_batch_get_location_cb callback, void *user_data);
 
+int location_manager_enable_restriction(bool enable);
+
 /**
  * @}
  * @}

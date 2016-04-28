@@ -151,3 +151,10 @@ EXPORT_API int location_manager_foreach_location_batch(location_manager_h manage
 	batch = NULL;
 	return LOCATIONS_ERROR_NONE;
 }
+
+EXPORT_API int location_manager_enable_restriction(bool enable)
+{
+	int ret = LOCATION_ERROR_NONE;
+	ret = location_enable_restriction(enable);
+	return __convert_error_code(ret);
+}
