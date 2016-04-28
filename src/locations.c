@@ -1511,3 +1511,11 @@ EXPORT_API int location_manager_clear_mock_location(location_manager_h manager)
 	ret = location_clear_mock_location(handle->object);
 	return __convert_error_code(ret);
 }
+
+EXPORT_API int location_manager_enable_restriction(const bool enable)
+{
+	int ret = LOCATION_ERROR_NONE;
+	ret = location_enable_restriction(enable);
+	return __convert_error_code(ret);
+}
+
