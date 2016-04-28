@@ -125,6 +125,8 @@ int __is_location_supported(void);
 int __set_callback(_location_event_e type, location_manager_h manager, void *callback, void *user_data);
 int __unset_callback(_location_event_e type, location_manager_h manager);
 
+int location_manager_enable_restriction(const bool enable);
+
 #ifdef __cplusplus
 }
 #endif
