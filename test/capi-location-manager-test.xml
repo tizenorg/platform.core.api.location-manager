@@ -8,7 +8,7 @@
 		<privilege>http://tizen.org/privilege/location</privilege>
 		<privilege>http://tizen.org/privilege/location.enable</privilege>
 	</privileges>
-	<ui-application appid="capi-location-manager-test" exec="/opt/usr/devel/location/location-test" nodisplay="true" multiple="false" type="capp" taskmanage="false" launch_mode="single">
+	<ui-application appid="capi-location-manager-test" exec=${TZ_SYS_RW_APP}"/test/location/location-test" nodisplay="true" multiple="false" type="capp" taskmanage="false" launch_mode="single">
 		<label>Location Manager Test</label>
 	</ui-application>
 </manifest>
