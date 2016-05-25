@@ -20,6 +20,7 @@
 #include <system_info.h>
 #include "locations.h"
 #include "location_internal.h"
+#include "fused-location.h"
 
 static location_setting_changed_s g_location_setting[LOCATIONS_METHOD_MOCK + 1];
 
@@ -490,6 +491,27 @@ EXPORT_API int location_manager_create(location_method_e method, location_manage
 			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x) : fail to location feature", LOCATIONS_ERROR_NOT_SUPPORTED);
 			return LOCATIONS_ERROR_NOT_SUPPORTED;
 		}
+	} else if (method == LOCATIONS_METHOD_FUSED) {
+		if (__is_fused_location_supported() == LOCATIONS_ERROR_NOT_SUPPORTED) {
+			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x) : fail to location feature", LOCATIONS_ERROR_NOT_SUPPORTED);
+			return LOCATIONS_ERROR_NOT_SUPPORTED;
+		} else {
+			location_manager_s *handle = (location_manager_s *) malloc(sizeof(location_manager_s));
+			if (handle == NULL) {
+				LOCATIONS_LOGE("OUT_OF_MEMORY(0x%08x)", LOCATIONS_ERROR_OUT_OF_MEMORY);
+				return LOCATIONS_ERROR_OUT_OF_MEMORY;
+			}
+
+			memset(handle, 0, sizeof(location_manager_s));
+			handle->method = method;
+			if (fused_location_create((fused_location_h*)(&handle->other_manager)) != FUSED_LOCATION_ERROR_NONE) {
+				LOCATIONS_LOGE("OUT_OF_MEMORY(0x%08x)", LOCATIONS_ERROR_OUT_OF_MEMORY);
+				return LOCATIONS_ERROR_OUT_OF_MEMORY;
+			}
+			*manager = (location_manager_h) handle;
+
+			return LOCATION_ERROR_NONE;
+		}
 	}
 
 	LocationMethod _method = __convert_LocationMethod(method);
@@ -551,7 +573,12 @@ EXPORT_API int location_manager_destroy(location_manager_h manager)
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
 
-
+	if (handle->method == LOCATIONS_METHOD_FUSED) {
+		fused_location_destroy(handle->other_manager);
+		free(handle);
+		return LOCATIONS_ERROR_NONE;
+	}
+	
 	if (handle->sig_id[_LOCATION_SIGNAL_SERVICE_ENABLED]) {
 		g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_SERVICE_ENABLED]);
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_ENABLED] = 0;
@@ -588,6 +615,18 @@ EXPORT_API int location_manager_start(location_manager_h manager)
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
+	
+	if (handle->method == LOCATIONS_METHOD_FUSED) {
+		int ret = fused_location_start(handle->other_manager);
+
+		if (ret == FUSED_LOCATION_ERROR_INVALID_ARGUMENT) {
+			return LOCATION_ERROR_PARAMETER;
+		} else if (ret == FUSED_LOCATION_ERROR_ANY) {
+			return LOCATION_ERROR_UNKNOWN;
+		} else {
+			return LOCATION_ERROR_NONE;
+		}
+	}
 
 	if (!handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED])
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED] = g_signal_connect(handle->object, "service-updated", G_CALLBACK(__cb_service_updated), handle);
@@ -650,6 +689,18 @@ EXPORT_API int location_manager_stop(location_manager_h manager)
 	LOCATIONS_NULL_ARG_CHECK(manager);
 
 	location_manager_s *handle = (location_manager_s *) manager;
+	
+	if (handle->method == LOCATIONS_METHOD_FUSED) {
+		int ret = fused_location_stop(handle->other_manager);
+
+		if (ret == FUSED_LOCATION_ERROR_INVALID_ARGUMENT) {
+			return LOCATION_ERROR_PARAMETER;
+		} else if (ret == FUSED_LOCATION_ERROR_ANY) {
+			return LOCATION_ERROR_UNKNOWN;
+		} else {
+			return LOCATION_ERROR_NONE;
+		}
+	}
 
 	if (handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED]) {
 		g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED]);
@@ -1117,6 +1168,19 @@ EXPORT_API int location_manager_set_position_updated_cb(location_manager_h manag
 	LOCATIONS_CHECK_CONDITION(interval >= 1 && interval <= 120, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
+	
+	if (handle->method == LOCATIONS_METHOD_FUSED) {
+		int ret = fused_location_set_position_callback(handle->other_manager, callback, user_data);
+
+		if (ret == FUSED_LOCATION_ERROR_INVALID_ARGUMENT) {
+			return LOCATION_ERROR_PARAMETER;
+		} else if (ret == FUSED_LOCATION_ERROR_ANY) {
+			return LOCATION_ERROR_UNKNOWN;
+		} else {
+			return LOCATION_ERROR_NONE;
+		}
+	}
+	
 	g_object_set(handle->object, "pos-interval", interval, NULL);
 	return __set_callback(_LOCATIONS_EVENT_TYPE_POSITION, manager, callback, user_data);
 }
@@ -1125,6 +1189,22 @@ EXPORT_API int location_manager_unset_position_updated_cb(location_manager_h man
 {
 	LOCATIONS_LOGD("location_manager_unset_position_updated_cb");
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
+	
+	
+	location_manager_s *handle = (location_manager_s *) manager;
+
+	if (handle->method == LOCATIONS_METHOD_FUSED) {
+		int ret = fused_location_set_position_callback(handle->other_manager, NULL, NULL);
+
+		if (ret == FUSED_LOCATION_ERROR_INVALID_ARGUMENT) {
+			return LOCATION_ERROR_PARAMETER;
+		} else if (ret == FUSED_LOCATION_ERROR_ANY) {
+			return LOCATION_ERROR_UNKNOWN;
+		} else {
+			return LOCATION_ERROR_NONE;
+		}
+	}
+	
 	return __unset_callback(_LOCATIONS_EVENT_TYPE_POSITION, manager);
 }
 

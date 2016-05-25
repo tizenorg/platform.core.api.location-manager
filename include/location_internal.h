@@ -99,6 +99,7 @@ typedef struct _location_manager_s {
 	GList *bounds_list;
 	guint timeout;
 	gulong sig_id[_LOCATION_SIGNAL_NUM];
+	gpointer other_manager;
 } location_manager_s;
 
 typedef struct _location_bounds_s {
@@ -120,6 +121,7 @@ int __convert_error_code(int code);
 int __is_gps_supported(void);
 int __is_gps_satellite_supported(void);
 int __is_wps_supported(void);
+int __is_fused_location_supported(void);
 int __is_location_supported(void);
 int __set_callback(_location_event_e type, location_manager_h manager, void *callback, void *user_data);
 int __unset_callback(_location_event_e type, location_manager_h manager);
