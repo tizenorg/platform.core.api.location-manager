@@ -113,6 +113,12 @@ int __is_wps_supported(void)
 	return LOCATIONS_ERROR_NONE;
 }
 
+int __is_fused_location_supported(void)
+{
+	// TODO: implement
+	return LOCATIONS_ERROR_NONE;
+}
+
 int __is_location_supported(void)
 {
 	if (__is_gps_supported() == LOCATIONS_ERROR_NOT_SUPPORTED) {

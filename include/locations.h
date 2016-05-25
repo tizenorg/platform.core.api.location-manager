@@ -60,6 +60,7 @@ typedef enum {
 	LOCATIONS_METHOD_GPS,		/**< This method uses Global Positioning System */
 	LOCATIONS_METHOD_WPS,		/**< This method uses WiFi Positioning System */
 	LOCATIONS_METHOD_MOCK,		/**< This method uses mock location for testing (Since 3.0)*/
+	LOCATIONS_METHOD_FUSED,		/**< This method uses fused location service (experimental)*/
 } location_method_e;
 
 /**
