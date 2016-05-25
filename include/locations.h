@@ -36,17 +36,17 @@ extern "C" {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-	LOCATIONS_ERROR_NONE						= TIZEN_ERROR_NONE,						/**< Successful */
-	LOCATIONS_ERROR_OUT_OF_MEMORY				= TIZEN_ERROR_OUT_OF_MEMORY,			/**< Out of memory */
-	LOCATIONS_ERROR_INVALID_PARAMETER			= TIZEN_ERROR_INVALID_PARAMETER,		/**< Invalid parameter */
-	LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED	= TIZEN_ERROR_PERMISSION_DENIED,		/**< Permission denied */
-	LOCATIONS_ERROR_NOT_SUPPORTED				= TIZEN_ERROR_NOT_SUPPORTED,			/**< Not supported */
-	LOCATIONS_ERROR_INCORRECT_METHOD			= TIZEN_ERROR_LOCATION_MANAGER | 0x01,	/**< Location manager contains incorrect method for a given call */
-	LOCATIONS_ERROR_NETWORK_FAILED				= TIZEN_ERROR_LOCATION_MANAGER | 0x02,	/**< Network unavailable */
-	LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE		= TIZEN_ERROR_LOCATION_MANAGER | 0x03,	/**< Location service is not available */
-	LOCATIONS_ERROR_GPS_SETTING_OFF				= TIZEN_ERROR_LOCATION_MANAGER | 0x04,	/**< Setting for GPS, WPS, or MOCK is turned off */
-	LOCATIONS_ERROR_SECURITY_RESTRICTED			= TIZEN_ERROR_LOCATION_MANAGER | 0x05,	/**< Restricted by security system policy */
-	LOCATIONS_ERROR_SETTING_OFF					= LOCATIONS_ERROR_GPS_SETTING_OFF,		/**< Setting for GPS, WPS, or MOCK is turned off (Since 3.0) */
+    LOCATIONS_ERROR_NONE						= TIZEN_ERROR_NONE,						/**< Successful */
+    LOCATIONS_ERROR_OUT_OF_MEMORY				= TIZEN_ERROR_OUT_OF_MEMORY,			/**< Out of memory */
+    LOCATIONS_ERROR_INVALID_PARAMETER			= TIZEN_ERROR_INVALID_PARAMETER,		/**< Invalid parameter */
+    LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED	= TIZEN_ERROR_PERMISSION_DENIED,		/**< Permission denied */
+    LOCATIONS_ERROR_NOT_SUPPORTED				= TIZEN_ERROR_NOT_SUPPORTED,			/**< Not supported */
+    LOCATIONS_ERROR_INCORRECT_METHOD			= TIZEN_ERROR_LOCATION_MANAGER | 0x01,	/**< Location manager contains incorrect method for a given call */
+    LOCATIONS_ERROR_NETWORK_FAILED				= TIZEN_ERROR_LOCATION_MANAGER | 0x02,	/**< Network unavailable */
+    LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE		= TIZEN_ERROR_LOCATION_MANAGER | 0x03,	/**< Location service is not available */
+    LOCATIONS_ERROR_GPS_SETTING_OFF				= TIZEN_ERROR_LOCATION_MANAGER | 0x04,	/**< Setting for GPS, WPS, or MOCK is turned off */
+    LOCATIONS_ERROR_SECURITY_RESTRICTED			= TIZEN_ERROR_LOCATION_MANAGER | 0x05,	/**< Restricted by security system policy */
+    LOCATIONS_ERROR_SETTING_OFF					= LOCATIONS_ERROR_GPS_SETTING_OFF,		/**< Setting for GPS, WPS, or MOCK is turned off (Since 3.0) */
 } location_error_e;
 
 
@@ -55,11 +55,12 @@ typedef enum {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-	LOCATIONS_METHOD_NONE = -1,	/**< Undefined method */
-	LOCATIONS_METHOD_HYBRID,	/**< This method selects the best method available at the moment */
-	LOCATIONS_METHOD_GPS,		/**< This method uses Global Positioning System */
-	LOCATIONS_METHOD_WPS,		/**< This method uses WiFi Positioning System */
-	LOCATIONS_METHOD_MOCK,		/**< This method uses mock location for testing (Since 3.0)*/
+    LOCATIONS_METHOD_NONE = -1,	/**< Undefined method */
+    LOCATIONS_METHOD_HYBRID,	/**< This method selects the best method available at the moment */
+    LOCATIONS_METHOD_GPS,		/**< This method uses Global Positioning System */
+    LOCATIONS_METHOD_WPS,		/**< This method uses WiFi Positioning System */
+    LOCATIONS_METHOD_MOCK,		/**< This method uses mock location for testing (Since 3.0)*/
+    LOCATIONS_METHOD_FUSED,		/**< This method uses fused location service (experimental)*/
 } location_method_e;
 
 /**
@@ -67,13 +68,13 @@ typedef enum {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-	LOCATIONS_ACCURACY_NONE = 0,	/**< Invalid data */
-	LOCATIONS_ACCURACY_COUNTRY,		/**< Country accuracy level */
-	LOCATIONS_ACCURACY_REGION,		/**< Regional accuracy level */
-	LOCATIONS_ACCURACY_LOCALITY,	/**< Local accuracy level */
-	LOCATIONS_ACCURACY_POSTALCODE,	/**< Postal accuracy level */
-	LOCATIONS_ACCURACY_STREET,		/**< Street accuracy level */
-	LOCATIONS_ACCURACY_DETAILED,	/**< Detailed accuracy level */
+    LOCATIONS_ACCURACY_NONE = 0,	/**< Invalid data */
+    LOCATIONS_ACCURACY_COUNTRY,		/**< Country accuracy level */
+    LOCATIONS_ACCURACY_REGION,		/**< Regional accuracy level */
+    LOCATIONS_ACCURACY_LOCALITY,	/**< Local accuracy level */
+    LOCATIONS_ACCURACY_POSTALCODE,	/**< Postal accuracy level */
+    LOCATIONS_ACCURACY_STREET,		/**< Street accuracy level */
+    LOCATIONS_ACCURACY_DETAILED,	/**< Detailed accuracy level */
 } location_accuracy_level_e;
 
 /**
@@ -81,8 +82,8 @@ typedef enum {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-	LOCATIONS_SERVICE_DISABLED,			/**< Service is disabled */
-	LOCATIONS_SERVICE_ENABLED,			/**< Service is enabled */
+    LOCATIONS_SERVICE_DISABLED,			/**< Service is disabled */
+    LOCATIONS_SERVICE_ENABLED,			/**< Service is enabled */
 } location_service_state_e;
 
 /**
@@ -90,9 +91,9 @@ typedef enum {
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
 typedef enum {
-	LOCATIONS_ACCESS_STATE_NONE,		/**< Access state is not determined */
-	LOCATIONS_ACCESS_STATE_DENIED,		/**< Access denied */
-	LOCATIONS_ACCESS_STATE_ALLOWED,		/**< Access authorized */
+    LOCATIONS_ACCESS_STATE_NONE,		/**< Access state is not determined */
+    LOCATIONS_ACCESS_STATE_DENIED,		/**< Access denied */
+    LOCATIONS_ACCESS_STATE_ALLOWED,		/**< Access authorized */
 } location_accessibility_state_e;
 
 /**
