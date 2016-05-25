@@ -9,6 +9,7 @@ Source1001: %{name}.manifest
 BuildRequires: cmake
 BuildRequires: pkgconfig(dlog)
 BuildRequires: pkgconfig(lbs-location)
+BuildRequires: pkgconfig(fused-location-client)
 BuildRequires: pkgconfig(capi-base-common)
 BuildRequires: pkgconfig(capi-system-info)
 BuildRequires: pkgconfig(vconf)

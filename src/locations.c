@@ -1,18 +1,18 @@
 /*
- * Copyright (c) 2011-2013 Samsung Electronics Co., Ltd All Rights Reserved
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright (c) 2011-2013 Samsung Electronics Co., Ltd All Rights Reserved
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+* http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +20,7 @@
 #include <system_info.h>
 #include "locations.h"
 #include "location_internal.h"
+#include "fused-location.h"
 
 static location_setting_changed_s g_location_setting[LOCATIONS_METHOD_MOCK + 1];
 
@@ -138,7 +139,7 @@ static void __cb_service_disabled(GObject *self, guint status, gpointer userdata
 	location_manager_s *handle = (location_manager_s *) userdata;
 	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]) {
 		((location_service_state_changed_cb)
-		 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_DISABLED,handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
+		handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_DISABLED,handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
 	}
 }
 
@@ -151,13 +152,13 @@ static void __cb_service_status_changed(GObject *self, guint status, gpointer us
 	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]) {
 		if (status == LOCATION_STATUS_2D_FIX || status == LOCATION_STATUS_3D_FIX)
 			((location_service_state_changed_cb)
-			 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_ENABLED, handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
+			handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_ENABLED, handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
 		else if (status == LOCATION_STATUS_NO_FIX)
 			((location_service_state_changed_cb)
-				 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_DISABLED, handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
+				handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_DISABLED, handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
 		else if (status == LOCATION_STATUS_MOCK_FAIL)
 			((location_service_state_changed_cb)
-				 handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_ERROR, handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
+				handle->user_cb[_LOCATIONS_EVENT_TYPE_SERVICE_STATE])(LOCATIONS_SERVICE_ERROR, handle->user_data[_LOCATIONS_EVENT_TYPE_SERVICE_STATE]);
 	}
 }
 #endif
@@ -490,6 +491,27 @@ EXPORT_API int location_manager_create(location_method_e method, location_manage
 			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x) : fail to location feature", LOCATIONS_ERROR_NOT_SUPPORTED);
 			return LOCATIONS_ERROR_NOT_SUPPORTED;
 		}
+	} else if (method == LOCATIONS_METHOD_FUSED) {
+		if (__is_fused_location_supported() == LOCATIONS_ERROR_NOT_SUPPORTED) {
+			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x) : fail to location feature", LOCATIONS_ERROR_NOT_SUPPORTED);
+			return LOCATIONS_ERROR_NOT_SUPPORTED;
+		} else {
+			location_manager_s *handle = (location_manager_s *) malloc(sizeof(location_manager_s));
+			if (handle == NULL) {
+				LOCATIONS_LOGE("OUT_OF_MEMORY(0x%08x)", LOCATIONS_ERROR_OUT_OF_MEMORY);
+				return LOCATIONS_ERROR_OUT_OF_MEMORY;
+			}
+
+			memset(handle, 0, sizeof(location_manager_s));
+			handle->method = method;
+			if (fused_location_create((fused_location_h*)(&handle->other_manager)) != FUSED_LOCATION_ERROR_NONE) {
+				LOCATIONS_LOGE("OUT_OF_MEMORY(0x%08x)", LOCATIONS_ERROR_OUT_OF_MEMORY);
+				return LOCATIONS_ERROR_OUT_OF_MEMORY;
+			}
+			*manager = (location_manager_h) handle;
+
+			return LOCATION_ERROR_NONE;
+		}
 	}
 
 	LocationMethod _method = __convert_LocationMethod(method);
@@ -551,6 +573,11 @@ EXPORT_API int location_manager_destroy(location_manager_h manager)
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
 
+	if (handle->method == LOCATIONS_METHOD_FUSED) {
+		fused_location_destroy(handle->other_manager);
+		free(handle);
+		return LOCATIONS_ERROR_NONE;
+	}
 
 	if (handle->sig_id[_LOCATION_SIGNAL_SERVICE_ENABLED]) {
 		g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_SERVICE_ENABLED]);
@@ -588,6 +615,18 @@ EXPORT_API int location_manager_start(location_manager_h manager)
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
+
+	if (handle->method == LOCATIONS_METHOD_FUSED) {
+		int ret = fused_location_start(handle->other_manager);
+
+		if (ret == FUSED_LOCATION_ERROR_INVALID_ARGUMENT) {
+			return LOCATION_ERROR_PARAMETER;
+		} else if (ret == FUSED_LOCATION_ERROR_ANY) {
+			return LOCATION_ERROR_UNKNOWN;
+		} else {
+			return LOCATION_ERROR_NONE;
+		}
+	}
 
 	if (!handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED])
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED] = g_signal_connect(handle->object, "service-updated", G_CALLBACK(__cb_service_updated), handle);
@@ -650,6 +689,18 @@ EXPORT_API int location_manager_stop(location_manager_h manager)
 	LOCATIONS_NULL_ARG_CHECK(manager);
 
 	location_manager_s *handle = (location_manager_s *) manager;
+
+	if (handle->method == LOCATIONS_METHOD_FUSED) {
+		int ret = fused_location_stop(handle->other_manager);
+
+		if (ret == FUSED_LOCATION_ERROR_INVALID_ARGUMENT) {
+			return LOCATION_ERROR_PARAMETER;
+		} else if (ret == FUSED_LOCATION_ERROR_ANY) {
+			return LOCATION_ERROR_UNKNOWN;
+		} else {
+			return LOCATION_ERROR_NONE;
+		}
+	}
 
 	if (handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED]) {
 		g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED]);
@@ -765,7 +816,7 @@ EXPORT_API int location_manager_get_method(location_manager_h manager, location_
 }
 
 EXPORT_API int location_manager_get_position(location_manager_h manager, double *altitude, double *latitude, double *longitude,
-											 time_t *timestamp)
+											time_t *timestamp)
 {
 	LOCATIONS_LOGD("location_manager_get_position");
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
@@ -873,7 +924,7 @@ EXPORT_API int location_manager_get_velocity(location_manager_h manager, double 
 }
 
 EXPORT_API int location_manager_get_accuracy(location_manager_h manager, location_accuracy_level_e *level, double *horizontal,
-											 double *vertical)
+											double *vertical)
 {
 	LOCATIONS_LOGD("location_manager_get_accuracy");
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
@@ -1117,6 +1168,19 @@ EXPORT_API int location_manager_set_position_updated_cb(location_manager_h manag
 	LOCATIONS_CHECK_CONDITION(interval >= 1 && interval <= 120, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
 	LOCATIONS_NULL_ARG_CHECK(manager);
 	location_manager_s *handle = (location_manager_s *) manager;
+
+	if (handle->method == LOCATIONS_METHOD_FUSED) {
+		int ret = fused_location_set_position_callback(handle->other_manager, callback, user_data);
+
+		if (ret == FUSED_LOCATION_ERROR_INVALID_ARGUMENT) {
+			return LOCATION_ERROR_PARAMETER;
+		} else if (ret == FUSED_LOCATION_ERROR_ANY) {
+			return LOCATION_ERROR_UNKNOWN;
+		} else {
+			return LOCATION_ERROR_NONE;
+		}
+	}
+
 	g_object_set(handle->object, "pos-interval", interval, NULL);
 	return __set_callback(_LOCATIONS_EVENT_TYPE_POSITION, manager, callback, user_data);
 }
@@ -1125,6 +1189,21 @@ EXPORT_API int location_manager_unset_position_updated_cb(location_manager_h man
 {
 	LOCATIONS_LOGD("location_manager_unset_position_updated_cb");
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
+
+	location_manager_s *handle = (location_manager_s *) manager;
+
+	if (handle->method == LOCATIONS_METHOD_FUSED) {
+		int ret = fused_location_set_position_callback(handle->other_manager, NULL, NULL);
+
+		if (ret == FUSED_LOCATION_ERROR_INVALID_ARGUMENT) {
+			return LOCATION_ERROR_PARAMETER;
+		} else if (ret == FUSED_LOCATION_ERROR_ANY) {
+			return LOCATION_ERROR_UNKNOWN;
+		} else {
+			return LOCATION_ERROR_NONE;
+		}
+	}
+
 	return __unset_callback(_LOCATIONS_EVENT_TYPE_POSITION, manager);
 }
 
@@ -1147,7 +1226,7 @@ EXPORT_API int location_manager_unset_velocity_updated_cb(location_manager_h man
 }
 
 EXPORT_API int location_manager_set_service_state_changed_cb(location_manager_h manager, location_service_state_changed_cb callback,
-															 void *user_data)
+															void *user_data)
 {
 	LOCATIONS_LOGD("location_manager_set_service_state_changed_cb");
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
@@ -1439,8 +1518,8 @@ EXPORT_API int gps_status_foreach_last_satellites_in_view(location_manager_h man
 
 
 /**
- * Tizen 3.0
- */
+* Tizen 3.0
+*/
 EXPORT_API int location_manager_enable_mock_location(const bool enable)
 {
 	LOCATIONS_LOGD("enable: %d", enable);
@@ -1526,18 +1605,18 @@ EXPORT_API int location_manager_clear_mock_location(location_manager_h manager)
 
 #if 0
 /**
- * @brief Gets the state of location service.
- * @since_tizen 3.0
- * @param[in] manager		The location manager handle
- * @param[out] state		The current state of location service
- * @return 0 on success, otherwise a negative error value
- * @retval #LOCATIONS_ERROR_NONE Successful
- * @retval #LOCATIONS_ERROR_INVALID_PARAMETER	Invalid parameter
- * @retval #LOCATIONS_ERROR_NOT_SUPPORTED	Not supported
- * @see location_manager_create()
- * @see location_manager_set_setting_changed_cb()
- * @see location_manager_unset_setting_changed_cb()
- */
+* @brief Gets the state of location service.
+* @since_tizen 3.0
+* @param[in] manager		The location manager handle
+* @param[out] state		The current state of location service
+* @return 0 on success, otherwise a negative error value
+* @retval #LOCATIONS_ERROR_NONE Successful
+* @retval #LOCATIONS_ERROR_INVALID_PARAMETER	Invalid parameter
+* @retval #LOCATIONS_ERROR_NOT_SUPPORTED	Not supported
+* @see location_manager_create()
+* @see location_manager_set_setting_changed_cb()
+* @see location_manager_unset_setting_changed_cb()
+*/
 int location_manager_get_service_state(location_manager_h manager, location_service_state_e *state);
 
 EXPORT_API int location_manager_get_service_state(location_manager_h manager, location_service_state_e *state)
