@@ -73,7 +73,8 @@ EXPORT_API int location_manager_start_batch(location_manager_h manager)
 		if (!handle->sig_id[_LOCATION_SIGNAL_BATCH_UPDATED])
 			handle->sig_id[_LOCATION_SIGNAL_BATCH_UPDATED] = g_signal_connect(handle->object, "batch-updated", G_CALLBACK(__cb_batch_updated), handle);
 	} else {
-		LOCATIONS_LOGE("method is not GPS");
+		LOCATIONS_LOGE("method is not GPS [LOCATIONS_ERROR_INCORRECT_METHOD]");
+		return LOCATIONS_ERROR_INCORRECT_METHOD;
 	}
 
 	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_BATCH] != NULL)
@@ -98,8 +99,6 @@ EXPORT_API int location_manager_stop_batch(location_manager_h manager)
 			g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_BATCH_UPDATED]);
 			handle->sig_id[_LOCATION_SIGNAL_BATCH_UPDATED] = 0;
 		}
-	} else {
-		LOCATIONS_LOGE("method is not GPS");
 	}
 
 	int ret = location_stop_batch(handle->object);
@@ -120,15 +119,12 @@ EXPORT_API int location_manager_foreach_location_batch(location_manager_h manage
 
 	int ret = location_get_batch(handle->object, &batch);
 	if (ret != LOCATION_ERROR_NONE || batch == NULL) {
-		if (ret == LOCATION_ERROR_NOT_SUPPORTED) {
-			LOCATIONS_LOGE("LOCATIONS_ERROR_INCORRECT_METHOD(0x%08x) : method - %d", LOCATIONS_ERROR_INCORRECT_METHOD, handle->method);
-			return LOCATIONS_ERROR_INCORRECT_METHOD;
-		} else if (ret == LOCATION_ERROR_NOT_ALLOWED) {
+		if (ret == LOCATION_ERROR_NOT_ALLOWED) {
 			LOCATIONS_LOGE("LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED");
 			return LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED;
 		}
 
-		LOCATIONS_LOGE("LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE(0x%08x) : batch is NULL ", LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE);
+		LOCATIONS_LOGE("Batch is NULL [LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE]");
 		return LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
 	}
 
