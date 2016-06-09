@@ -86,16 +86,6 @@ typedef enum {
 } location_service_state_e;
 
 /**
- * @brief Enumeration for the location service accessibility state.
- * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
- */
-typedef enum {
-	LOCATIONS_ACCESS_STATE_NONE,		/**< Access state is not determined */
-	LOCATIONS_ACCESS_STATE_DENIED,		/**< Access denied */
-	LOCATIONS_ACCESS_STATE_ALLOWED,		/**< Access authorized */
-} location_accessibility_state_e;
-
-/**
  * @brief The location manager handle.
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
@@ -630,18 +620,6 @@ int location_manager_get_last_velocity(location_manager_h manager, double *climb
  * @pre The location manager handle must be created by location_manager_create()
  */
 int location_manager_get_last_accuracy(location_manager_h manager, location_accuracy_level_e *level, double *horizontal, double *vertical);
-
-/**
- * @brief Gets the current application's location accessibility status.
- * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
- * @param[out] state		The current location service accessibility status.
- * @return 0 on success, otherwise a negative error value
- * @retval #LOCATIONS_ERROR_NONE					Successful
- * @retval #LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE	Service not available
- * @retval #LOCATIONS_ERROR_INVALID_PARAMETER		Invalid argument
- * @retval #LOCATIONS_ERROR_NOT_SUPPORTED			Not supported
- */
-int location_manager_get_accessibility_state(location_accessibility_state_e *state);
 
 /**
  * @brief Registers a callback function to be invoked at defined interval with updated position information.
