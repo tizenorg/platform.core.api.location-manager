@@ -77,24 +77,24 @@ static void __cb_service_updated(GObject *self, guint type, gpointer data, gpoin
 		LOCATIONS_LOGD("Current satellite information: timestamp : %d, number of active : %d, number of inview : %d",
 						sat->timestamp, sat->num_of_sat_used, sat->num_of_sat_inview);
 		((gps_status_satellite_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_SATELLITE])(sat->num_of_sat_used, sat->num_of_sat_inview,
-				sat->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_SATELLITE]);
+											sat->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_SATELLITE]);
 	} else if (type == DISTANCE_UPDATED && handle->user_cb[_LOCATIONS_EVENT_TYPE_DISTANCE]) {
 		LocationPosition *pos = (LocationPosition *) data;
 		LocationVelocity *vel = (LocationVelocity *) velocity;	/* current velocity */
 		((location_changed_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_DISTANCE])(0, pos->latitude, pos->longitude, pos->altitude,
-																				vel->speed, vel->direction, pos->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_DISTANCE]);
+								vel->speed, vel->direction, pos->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_DISTANCE]);
 	} else {
 
 		if (handle->user_cb[_LOCATIONS_EVENT_TYPE_POSITION] && (type & POSITION_UPDATED) != 0) {
 			LocationPosition *pos = (LocationPosition *) data;
-			((location_position_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_POSITION])(pos->latitude, pos->longitude, pos->altitude, pos->timestamp,
-					handle->user_data[_LOCATIONS_EVENT_TYPE_POSITION]);
+			((location_position_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_POSITION])(pos->latitude, pos->longitude, pos->altitude,
+											pos->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_POSITION]);
 		}
 
 		if (handle->user_cb[_LOCATIONS_EVENT_TYPE_VELOCITY] && (type & VELOCITY_UPDATED) != 0) {
 			LocationVelocity *vel = (LocationVelocity *) velocity;
-			((location_velocity_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_VELOCITY])(vel->speed, vel->direction, vel->climb, vel->timestamp,
-					handle->user_data[_LOCATIONS_EVENT_TYPE_VELOCITY]);
+			((location_velocity_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_VELOCITY])(vel->speed, vel->direction, vel->climb,
+											vel->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_VELOCITY]);
 		}
 
 		if (handle->user_cb[_LOCATIONS_EVENT_TYPE_POS_VEL] && (type & LOCATION_CHANGED) != 0) {
@@ -102,7 +102,7 @@ static void __cb_service_updated(GObject *self, guint type, gpointer data, gpoin
 			LocationVelocity *vel = (LocationVelocity *) velocity;
 			LocationAccuracy *acc = (LocationAccuracy *) accuracy;
 			((location_changed_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_POS_VEL])(pos->latitude, pos->longitude, pos->altitude,
-																					vel->speed, vel->direction, acc->horizontal_accuracy, pos->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_POS_VEL]);
+									vel->speed, vel->direction, acc->horizontal_accuracy, pos->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_POS_VEL]);
 		}
 	}
 }
@@ -405,7 +405,7 @@ EXPORT_API int location_manager_is_enabled_method(location_method_e method, bool
 {
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
 
-	if (LOCATIONS_METHOD_HYBRID > method || LOCATIONS_METHOD_MOCK < method) {
+	if (method < LOCATIONS_METHOD_HYBRID || method > LOCATIONS_METHOD_MOCK) {
 		LOCATIONS_LOGE("Not supported method [%d]", method);
 		return LOCATIONS_ERROR_INCORRECT_METHOD;
 	}
@@ -431,7 +431,7 @@ EXPORT_API int location_manager_enable_method(const location_method_e method, co
 {
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
 
-	if (LOCATIONS_METHOD_HYBRID > method || LOCATIONS_METHOD_MOCK < method) {
+	if (method < LOCATIONS_METHOD_HYBRID || method > LOCATIONS_METHOD_MOCK) {
 		LOCATIONS_LOGE("Not supported method [%d]", method);
 		return LOCATIONS_ERROR_INCORRECT_METHOD;
 	}
@@ -593,7 +593,7 @@ EXPORT_API int location_manager_start(location_manager_h manager)
 	if (!handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED])
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED] = g_signal_connect(handle->object, "service-updated", G_CALLBACK(__cb_service_updated), handle);
 
-	if (LOCATIONS_METHOD_HYBRID <= handle->method && LOCATIONS_METHOD_MOCK >= handle->method) {
+	if (handle->method >= LOCATIONS_METHOD_HYBRID && handle->method <= LOCATIONS_METHOD_MOCK) {
 		if (!handle->sig_id[_LOCATION_SIGNAL_ZONE_IN])
 			handle->sig_id[_LOCATION_SIGNAL_ZONE_IN] = g_signal_connect(handle->object, "zone-in", G_CALLBACK(__cb_zone_in), handle);
 
@@ -656,7 +656,7 @@ EXPORT_API int location_manager_stop(location_manager_h manager)
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED] = 0;
 	}
 
-	if (LOCATIONS_METHOD_HYBRID <= handle->method && LOCATIONS_METHOD_MOCK >= handle->method) {
+	if (handle->method >= LOCATIONS_METHOD_HYBRID && handle->method <= LOCATIONS_METHOD_MOCK) {
 		if (handle->sig_id[_LOCATION_SIGNAL_ZONE_IN]) {
 			g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_ZONE_IN]);
 			handle->sig_id[_LOCATION_SIGNAL_ZONE_IN] = 0;
@@ -1477,16 +1477,24 @@ EXPORT_API int location_manager_set_mock_location(location_manager_h manager, co
 	vel = location_velocity_new(0, speed, direction, 0);
 	if (!vel) {
 		LOCATIONS_LOGE("Failed to create volocity");
+		location_position_free(pos);
 		return LOCATIONS_ERROR_OUT_OF_MEMORY;
 	}
 
 	acc = location_accuracy_new(LOCATION_ACCURACY_LEVEL_DETAILED, accuracy, -1);
-	if (!vel) {
+	if (!acc) {
 		LOCATIONS_LOGE("Failed to create accuracy");
+		location_position_free(pos);
+		location_velocity_free(vel);
 		return LOCATIONS_ERROR_OUT_OF_MEMORY;
 	}
 
 	ret = location_set_mock_location(handle->object, pos, vel, acc);
+
+	location_position_free(pos);
+	location_velocity_free(vel);
+	location_accuracy_free(acc);
+
 	return __convert_error_code(ret);
 
 }
