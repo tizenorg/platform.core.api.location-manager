@@ -86,6 +86,7 @@ typedef enum {
 } location_service_state_e;
 
 /**
+ * @deprecated Deprecated since 3.0
  * @brief Enumeration for the location service accessibility state.
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  */
@@ -632,6 +633,7 @@ int location_manager_get_last_velocity(location_manager_h manager, double *climb
 int location_manager_get_last_accuracy(location_manager_h manager, location_accuracy_level_e *level, double *horizontal, double *vertical);
 
 /**
+ * @deprecated Deprecated since 3.0
  * @brief Gets the current application's location accessibility status.
  * @since_tizen @if MOBILE 2.3 @elseif WEARABLE 2.3.1 @endif
  * @param[out] state		The current location service accessibility status.
