@@ -1477,16 +1477,24 @@ EXPORT_API int location_manager_set_mock_location(location_manager_h manager, co
 	vel = location_velocity_new(0, speed, direction, 0);
 	if (!vel) {
 		LOCATIONS_LOGE("Failed to create volocity");
+		location_position_free(pos);
 		return LOCATIONS_ERROR_OUT_OF_MEMORY;
 	}
 
 	acc = location_accuracy_new(LOCATION_ACCURACY_LEVEL_DETAILED, accuracy, -1);
 	if (!vel) {
 		LOCATIONS_LOGE("Failed to create accuracy");
+		location_position_free(pos);
+		location_velocity_free(vel);
 		return LOCATIONS_ERROR_OUT_OF_MEMORY;
 	}
 
 	ret = location_set_mock_location(handle->object, pos, vel, acc);
+
+	location_position_free(pos);
+	location_velocity_free(vel);
+	location_accuracy_free(acc);
+
 	return __convert_error_code(ret);
 
 }
