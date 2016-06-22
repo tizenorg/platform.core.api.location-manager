@@ -1,6 +1,6 @@
 Name: capi-location-manager
 Summary: A Location Manager library in Tizen Native API
-Version: 0.7.1
+Version: 0.7.2
 Release: 1
 Group: Location/API
 License: Apache-2.0
@@ -12,6 +12,7 @@ BuildRequires: pkgconfig(lbs-location)
 BuildRequires: pkgconfig(capi-base-common)
 BuildRequires: pkgconfig(capi-system-info)
 BuildRequires: pkgconfig(vconf)
+BuildRequires: pkgconfig(libtzplatform-config)
 Requires(post): /sbin/ldconfig
 Requires(postun): /sbin/ldconfig
 
@@ -40,7 +41,7 @@ export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
 
 MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
 cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DLIBDIR=%{_libdir} -DINCLUDEDIR=%{_includedir} \
--DFULLVER=%{version} -DMAJORVER=${MAJORVER} \
+-DFULLVER=%{version} -DMAJORVER=${MAJORVER} -DTZ_SYS_RO_PACKAGES=%{TZ_SYS_RO_PACKAGES} -DTZ_SYS_RW_APP=%{TZ_SYS_RW_APP} \
 
 make %{?jobs:-j%jobs}
 
@@ -77,6 +78,6 @@ Test application of Location Manager
 
 %files test
 %manifest test/capi-location-manager-test.manifest
-#/usr/share/packages/capi-location-manager-test.xml
-/opt/usr/devel/location/location_test
+%{TZ_SYS_RO_PACKAGES}/capi-location-manager-test.xml
+%{TZ_SYS_RW_APP}/test/location/location_test
 %endif

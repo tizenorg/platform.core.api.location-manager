@@ -13,7 +13,7 @@ INCLUDE_DIRECTORIES(${INC_DIR})
 SET(pc_dependents "capi-base-common")
 
 INCLUDE(FindPkgConfig)
-	pkg_check_modules(dependents REQUIRED dlog lbs-location capi-base-common capi-system-info)
+	pkg_check_modules(dependents REQUIRED dlog lbs-location capi-base-common capi-system-info libtzplatform-config)
 
 FOREACH(flag ${dependents_CFLAGS})
 	SET(EXTRA_CFLAGS "${EXTRA_CFLAGS} ${flag}")

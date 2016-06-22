@@ -77,24 +77,24 @@ static void __cb_service_updated(GObject *self, guint type, gpointer data, gpoin
 		LOCATIONS_LOGD("Current satellite information: timestamp : %d, number of active : %d, number of inview : %d",
 						sat->timestamp, sat->num_of_sat_used, sat->num_of_sat_inview);
 		((gps_status_satellite_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_SATELLITE])(sat->num_of_sat_used, sat->num_of_sat_inview,
-				sat->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_SATELLITE]);
+											sat->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_SATELLITE]);
 	} else if (type == DISTANCE_UPDATED && handle->user_cb[_LOCATIONS_EVENT_TYPE_DISTANCE]) {
 		LocationPosition *pos = (LocationPosition *) data;
 		LocationVelocity *vel = (LocationVelocity *) velocity;	/* current velocity */
 		((location_changed_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_DISTANCE])(0, pos->latitude, pos->longitude, pos->altitude,
-																				vel->speed, vel->direction, pos->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_DISTANCE]);
+								vel->speed, vel->direction, pos->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_DISTANCE]);
 	} else {
 
 		if (handle->user_cb[_LOCATIONS_EVENT_TYPE_POSITION] && (type & POSITION_UPDATED) != 0) {
 			LocationPosition *pos = (LocationPosition *) data;
-			((location_position_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_POSITION])(pos->latitude, pos->longitude, pos->altitude, pos->timestamp,
-					handle->user_data[_LOCATIONS_EVENT_TYPE_POSITION]);
+			((location_position_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_POSITION])(pos->latitude, pos->longitude, pos->altitude,
+											pos->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_POSITION]);
 		}
 
 		if (handle->user_cb[_LOCATIONS_EVENT_TYPE_VELOCITY] && (type & VELOCITY_UPDATED) != 0) {
 			LocationVelocity *vel = (LocationVelocity *) velocity;
-			((location_velocity_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_VELOCITY])(vel->speed, vel->direction, vel->climb, vel->timestamp,
-					handle->user_data[_LOCATIONS_EVENT_TYPE_VELOCITY]);
+			((location_velocity_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_VELOCITY])(vel->speed, vel->direction, vel->climb,
+											vel->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_VELOCITY]);
 		}
 
 		if (handle->user_cb[_LOCATIONS_EVENT_TYPE_POS_VEL] && (type & LOCATION_CHANGED) != 0) {
@@ -102,7 +102,7 @@ static void __cb_service_updated(GObject *self, guint type, gpointer data, gpoin
 			LocationVelocity *vel = (LocationVelocity *) velocity;
 			LocationAccuracy *acc = (LocationAccuracy *) accuracy;
 			((location_changed_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_POS_VEL])(pos->latitude, pos->longitude, pos->altitude,
-																					vel->speed, vel->direction, acc->horizontal_accuracy, pos->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_POS_VEL]);
+									vel->speed, vel->direction, acc->horizontal_accuracy, pos->timestamp, handle->user_data[_LOCATIONS_EVENT_TYPE_POS_VEL]);
 		}
 	}
 }
@@ -120,6 +120,15 @@ static void __cb_location_updated(GObject *self, int error, gpointer position, g
 		((location_updated_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_LOCATION])(converted_err, pos->latitude, pos->longitude, pos->altitude,
 																				pos->timestamp, vel->speed, vel->climb, vel->direction, handle->user_data[_LOCATIONS_EVENT_TYPE_LOCATION]);
 	}
+}
+
+static void __cb_batch_updated(GObject *self, guint num_of_location, gpointer userdata)
+{
+	LOCATIONS_LOGD("Batch callback function has been invoked.");
+	location_manager_s *handle = (location_manager_s *) userdata;
+
+	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_BATCH])
+		((location_batch_cb) handle->user_cb[_LOCATIONS_EVENT_TYPE_BATCH])(num_of_location, handle->user_data[_LOCATIONS_EVENT_TYPE_BATCH]);
 }
 
 static void __cb_service_enabled(GObject *self, guint status, gpointer userdata)
@@ -405,7 +414,7 @@ EXPORT_API int location_manager_is_enabled_method(location_method_e method, bool
 {
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
 
-	if (LOCATIONS_METHOD_HYBRID > method || LOCATIONS_METHOD_MOCK < method) {
+	if (method < LOCATIONS_METHOD_HYBRID || method > LOCATIONS_METHOD_MOCK) {
 		LOCATIONS_LOGE("Not supported method [%d]", method);
 		return LOCATIONS_ERROR_INCORRECT_METHOD;
 	}
@@ -431,7 +440,7 @@ EXPORT_API int location_manager_enable_method(const location_method_e method, co
 {
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
 
-	if (LOCATIONS_METHOD_HYBRID > method || LOCATIONS_METHOD_MOCK < method) {
+	if (method < LOCATIONS_METHOD_HYBRID || method > LOCATIONS_METHOD_MOCK) {
 		LOCATIONS_LOGE("Not supported method [%d]", method);
 		return LOCATIONS_ERROR_INCORRECT_METHOD;
 	}
@@ -593,7 +602,7 @@ EXPORT_API int location_manager_start(location_manager_h manager)
 	if (!handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED])
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED] = g_signal_connect(handle->object, "service-updated", G_CALLBACK(__cb_service_updated), handle);
 
-	if (LOCATIONS_METHOD_HYBRID <= handle->method && LOCATIONS_METHOD_MOCK >= handle->method) {
+	if (handle->method >= LOCATIONS_METHOD_HYBRID && handle->method <= LOCATIONS_METHOD_MOCK) {
 		if (!handle->sig_id[_LOCATION_SIGNAL_ZONE_IN])
 			handle->sig_id[_LOCATION_SIGNAL_ZONE_IN] = g_signal_connect(handle->object, "zone-in", G_CALLBACK(__cb_zone_in), handle);
 
@@ -656,7 +665,7 @@ EXPORT_API int location_manager_stop(location_manager_h manager)
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED] = 0;
 	}
 
-	if (LOCATIONS_METHOD_HYBRID <= handle->method && LOCATIONS_METHOD_MOCK >= handle->method) {
+	if (handle->method >= LOCATIONS_METHOD_HYBRID && handle->method <= LOCATIONS_METHOD_MOCK) {
 		if (handle->sig_id[_LOCATION_SIGNAL_ZONE_IN]) {
 			g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_ZONE_IN]);
 			handle->sig_id[_LOCATION_SIGNAL_ZONE_IN] = 0;
@@ -1433,6 +1442,115 @@ EXPORT_API int gps_status_foreach_last_satellites_in_view(location_manager_h man
 /**
  * Tizen 3.0
  */
+EXPORT_API int location_manager_set_location_batch_cb(location_manager_h manager, location_batch_cb callback, int batch_interval, int batch_period, void *user_data)
+{
+	LOCATIONS_LOGD("location_manager_set_location_batch_cb");
+	LOCATIONS_NOT_SUPPORTED_CHECK(__is_batch_supported());
+
+	LOCATIONS_CHECK_CONDITION(batch_interval >= 1 && batch_interval <= 255, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
+	LOCATIONS_CHECK_CONDITION(batch_period >= 1 && batch_period <= 60000, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
+	LOCATIONS_CHECK_CONDITION(batch_interval <= batch_period, LOCATIONS_ERROR_INVALID_PARAMETER, "LOCATIONS_ERROR_INVALID_PARAMETER");
+	LOCATIONS_NULL_ARG_CHECK(manager);
+	LOCATIONS_NULL_ARG_CHECK(callback);
+	location_manager_s *handle = (location_manager_s *) manager;
+	g_object_set(handle->object, "batch-period", batch_period, NULL);
+	g_object_set(handle->object, "batch-interval", batch_interval, NULL);
+	return __set_callback(_LOCATIONS_EVENT_TYPE_BATCH, manager, callback, user_data);
+}
+
+EXPORT_API int location_manager_unset_location_batch_cb(location_manager_h manager)
+{
+	LOCATIONS_LOGD("location_manager_unset_location_batch_cb");
+	LOCATIONS_NOT_SUPPORTED_CHECK(__is_batch_supported());
+	return __unset_callback(_LOCATIONS_EVENT_TYPE_BATCH, manager);
+}
+
+EXPORT_API int location_manager_start_batch(location_manager_h manager)
+{
+	LOCATIONS_LOGD("location_manager_start_batch");
+	LOCATIONS_NOT_SUPPORTED_CHECK(__is_batch_supported());
+	LOCATIONS_NULL_ARG_CHECK(manager);
+	location_manager_s *handle = (location_manager_s *) manager;
+
+	if (LOCATIONS_METHOD_GPS == handle->method) {
+		if (!handle->sig_id[_LOCATION_SIGNAL_BATCH_UPDATED])
+			handle->sig_id[_LOCATION_SIGNAL_BATCH_UPDATED] = g_signal_connect(handle->object, "batch-updated", G_CALLBACK(__cb_batch_updated), handle);
+	} else {
+		LOCATIONS_LOGE("method is not GPS [LOCATIONS_ERROR_INCORRECT_METHOD]");
+		return LOCATIONS_ERROR_INCORRECT_METHOD;
+	}
+
+	if (handle->user_cb[_LOCATIONS_EVENT_TYPE_BATCH] != NULL)
+		LOCATIONS_LOGD("batch status set : Start");
+
+	int ret = location_start_batch(handle->object);
+	if (ret != LOCATION_ERROR_NONE)
+		return __convert_error_code(ret);
+
+	return LOCATIONS_ERROR_NONE;
+}
+
+EXPORT_API int location_manager_stop_batch(location_manager_h manager)
+{
+	LOCATIONS_LOGD("location_manager_stop_batch");
+	LOCATIONS_NOT_SUPPORTED_CHECK(__is_batch_supported());
+	LOCATIONS_NULL_ARG_CHECK(manager);
+	location_manager_s *handle = (location_manager_s *) manager;
+
+	if (LOCATIONS_METHOD_GPS == handle->method) {
+		if (handle->sig_id[_LOCATION_SIGNAL_BATCH_UPDATED]) {
+			g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_BATCH_UPDATED]);
+			handle->sig_id[_LOCATION_SIGNAL_BATCH_UPDATED] = 0;
+		}
+	}
+
+	int ret = location_stop_batch(handle->object);
+	if (ret != LOCATION_ERROR_NONE)
+		return __convert_error_code(ret);
+
+	return LOCATIONS_ERROR_NONE;
+}
+
+EXPORT_API int location_manager_foreach_location_batch(location_manager_h manager, location_batch_get_location_cb callback, void *user_data)
+{
+	LOCATIONS_LOGD("location_manager_foreach_location_batch");
+	LOCATIONS_NOT_SUPPORTED_CHECK(__is_batch_supported());
+	LOCATIONS_NULL_ARG_CHECK(manager);
+	LOCATIONS_NULL_ARG_CHECK(callback);
+	location_manager_s *handle = (location_manager_s *) manager;
+	LocationBatch *batch = NULL;
+
+	int ret = location_get_batch(handle->object, &batch);
+	if (ret != LOCATION_ERROR_NONE || batch == NULL) {
+		if (ret == LOCATION_ERROR_NOT_ALLOWED) {
+			LOCATIONS_LOGE("LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED");
+			return LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED;
+		}
+
+		LOCATIONS_LOGE("Batch is NULL [LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE]");
+		return LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
+	}
+
+	int i;
+	for (i = 0; i < batch->num_of_location; i++) {
+		gdouble latitude;
+		gdouble longitude;
+		gdouble altitude;
+		gdouble speed;
+		gdouble direction;
+		gdouble h_accuracy;
+		gdouble v_accuracy;
+		guint timestamp;
+
+		location_get_batch_details(batch, i, &latitude, &longitude, &altitude, &speed, &direction, &h_accuracy, &v_accuracy, &timestamp);
+		if (callback(latitude, longitude, altitude, speed, direction, h_accuracy, v_accuracy, timestamp, user_data) != TRUE)
+			break;
+	}
+	location_batch_free(batch);
+	batch = NULL;
+	return LOCATIONS_ERROR_NONE;
+}
+
 EXPORT_API int location_manager_enable_mock_location(const bool enable)
 {
 	LOCATIONS_LOGD("enable: %d", enable);
@@ -1477,16 +1595,24 @@ EXPORT_API int location_manager_set_mock_location(location_manager_h manager, co
 	vel = location_velocity_new(0, speed, direction, 0);
 	if (!vel) {
 		LOCATIONS_LOGE("Failed to create volocity");
+		location_position_free(pos);
 		return LOCATIONS_ERROR_OUT_OF_MEMORY;
 	}
 
 	acc = location_accuracy_new(LOCATION_ACCURACY_LEVEL_DETAILED, accuracy, -1);
-	if (!vel) {
+	if (!acc) {
 		LOCATIONS_LOGE("Failed to create accuracy");
+		location_position_free(pos);
+		location_velocity_free(vel);
 		return LOCATIONS_ERROR_OUT_OF_MEMORY;
 	}
 
 	ret = location_set_mock_location(handle->object, pos, vel, acc);
+
+	location_position_free(pos);
+	location_velocity_free(vel);
+	location_accuracy_free(acc);
+
 	return __convert_error_code(ret);
 
 }
