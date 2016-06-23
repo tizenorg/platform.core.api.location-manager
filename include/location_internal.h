@@ -28,7 +28,7 @@ extern "C" {
 #ifdef LOG_TAG
 #undef LOG_TAG
 #endif
-#define LOG_TAG "CAPI_LOCATION_MANAGER"
+#define LOG_TAG "LOCATION_CAPI"
 
 
 /*

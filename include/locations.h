@@ -60,6 +60,7 @@ typedef enum {
 	LOCATIONS_METHOD_GPS,		/**< This method uses Global Positioning System */
 	LOCATIONS_METHOD_WPS,		/**< This method uses WiFi Positioning System */
 	LOCATIONS_METHOD_MOCK,		/**< This method uses mock location for testing (Since 3.0)*/
+	LOCATIONS_METHOD_FUSED,		/**< This method uses Fused location */
 } location_method_e;
 
 /**
@@ -95,6 +96,16 @@ typedef enum {
 	LOCATIONS_ACCESS_STATE_DENIED,		/**< Access denied */
 	LOCATIONS_ACCESS_STATE_ALLOWED,		/**< Access authorized */
 } location_accessibility_state_e;
+
+/**
+ * @brief Enumeration for the fused location service.
+ * @since_tizen 3.0
+ */
+typedef enum {
+	LOCATIONS_FUSED_HIGH,			/**< High accuracy */
+	LOCATIONS_FUSED_BALANCED,		/**< Balanced power */
+	LOCATIONS_FUSED_NO_POWER,		/**< No power */
+} location_fused_accuracy_e;
 
 /**
  * @brief The location manager handle.
@@ -1060,6 +1071,12 @@ int location_manager_set_mock_location(location_manager_h manager, const double 
  * @see location_manager_set_mock_location()
  */
 int location_manager_clear_mock_location(location_manager_h manager);
+
+
+int location_manager_enable_fused_interval(location_manager_h manager, bool enable);
+
+int location_manager_fused_accuracy_mode(location_manager_h manager, location_fused_accuracy_e accuracy_mode);
+
 
 /**
  * @}
