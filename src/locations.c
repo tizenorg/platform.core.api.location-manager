@@ -21,7 +21,7 @@
 #include "locations.h"
 #include "location_internal.h"
 
-static location_setting_changed_s g_location_setting[LOCATIONS_METHOD_MOCK + 1];
+static location_setting_changed_s g_location_setting[LOCATIONS_METHOD_PASSIVE + 1];
 
 static location_method_e __convert_location_method_e(LocationMethod method)
 {
@@ -58,6 +58,9 @@ static LocationMethod __convert_LocationMethod(location_method_e method)
 		break;
 	case LOCATIONS_METHOD_MOCK:
 		_method = LOCATION_METHOD_MOCK;
+		break;
+	case LOCATIONS_METHOD_PASSIVE:
+		_method = LOCATION_METHOD_PASSIVE;
 		break;
 	case LOCATIONS_METHOD_NONE:
 	default:
@@ -500,6 +503,11 @@ EXPORT_API int location_manager_create(location_method_e method, location_manage
 			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x) : fail to location feature", LOCATIONS_ERROR_NOT_SUPPORTED);
 			return LOCATIONS_ERROR_NOT_SUPPORTED;
 		}
+	} else if (method == LOCATIONS_METHOD_PASSIVE) {
+		if (__is_location_supported() == LOCATIONS_ERROR_NOT_SUPPORTED) {
+			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x) : fail to location feature", LOCATIONS_ERROR_NOT_SUPPORTED);
+			return LOCATIONS_ERROR_NOT_SUPPORTED;
+		}
 	}
 
 	LocationMethod _method = __convert_LocationMethod(method);
@@ -602,7 +610,7 @@ EXPORT_API int location_manager_start(location_manager_h manager)
 	if (!handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED])
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED] = g_signal_connect(handle->object, "service-updated", G_CALLBACK(__cb_service_updated), handle);
 
-	if (handle->method >= LOCATIONS_METHOD_HYBRID && handle->method <= LOCATIONS_METHOD_MOCK) {
+	if (handle->method >= LOCATIONS_METHOD_HYBRID && handle->method <= LOCATIONS_METHOD_PASSIVE) {
 		if (!handle->sig_id[_LOCATION_SIGNAL_ZONE_IN])
 			handle->sig_id[_LOCATION_SIGNAL_ZONE_IN] = g_signal_connect(handle->object, "zone-in", G_CALLBACK(__cb_zone_in), handle);
 
@@ -665,7 +673,7 @@ EXPORT_API int location_manager_stop(location_manager_h manager)
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED] = 0;
 	}
 
-	if (handle->method >= LOCATIONS_METHOD_HYBRID && handle->method <= LOCATIONS_METHOD_MOCK) {
+	if (handle->method >= LOCATIONS_METHOD_HYBRID && handle->method <= LOCATIONS_METHOD_PASSIVE) {
 		if (handle->sig_id[_LOCATION_SIGNAL_ZONE_IN]) {
 			g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_ZONE_IN]);
 			handle->sig_id[_LOCATION_SIGNAL_ZONE_IN] = 0;
@@ -763,6 +771,9 @@ EXPORT_API int location_manager_get_method(location_manager_h manager, location_
 		break;
 	case LOCATION_METHOD_MOCK:
 		*method = LOCATIONS_METHOD_MOCK;
+		break;
+	case LOCATION_METHOD_PASSIVE:
+		*method = LOCATIONS_METHOD_PASSIVE;
 		break;
 	default: {
 		LOCATIONS_LOGE("[LOCATIONS_ERROR_INVALID_PARAMETER] method : %d ", method);
