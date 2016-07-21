@@ -33,6 +33,7 @@ int __convert_error_code(int code)
 		ret = LOCATIONS_ERROR_INVALID_PARAMETER;
 		msg = "LOCATIONS_ERROR_INVALID_PARAMETER";
 		break;
+	//LCOV_EXCL_START
 	case LOCATION_ERROR_NOT_ALLOWED:
 		ret = LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED;
 		msg = "LOCATIONS_ERROR_ACCESSIBILITY_NOT_ALLOWED";
@@ -60,6 +61,7 @@ int __convert_error_code(int code)
 	default:
 		msg = "LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE";
 		ret = LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE;
+	//LCOV_EXCL_STOP
 	}
 
 	if (ret != LOCATIONS_ERROR_NONE)
@@ -75,7 +77,7 @@ int __is_gps_supported(void)
 
 	retval = system_info_get_platform_bool("http://tizen.org/feature/location.gps", &is_supported);
 	if (retval != SYSTEM_INFO_ERROR_NONE)
-		LOCATIONS_LOGW("system_info_get_platform_bool failed: retval = %d", retval);
+		LOCATIONS_LOGW("system_info_get_platform_bool failed: retval = %d", retval);	//LCOV_EXCL_LINE
 
 	if (is_supported == false)
 		return LOCATIONS_ERROR_NOT_SUPPORTED;
@@ -90,7 +92,7 @@ int __is_gps_satellite_supported(void)
 
 	retval = system_info_get_platform_bool("http://tizen.org/feature/location.gps.satellite", &is_supported);
 	if (retval != SYSTEM_INFO_ERROR_NONE)
-		LOCATIONS_LOGW("system_info_get_platform_bool failed: retval = %d", retval);
+		LOCATIONS_LOGW("system_info_get_platform_bool failed: retval = %d", retval);	//LCOV_EXCL_LINE
 
 	if (is_supported == false)
 		return LOCATIONS_ERROR_NOT_SUPPORTED;
@@ -105,21 +107,25 @@ int __is_wps_supported(void)
 
 	retval = system_info_get_platform_bool("http://tizen.org/feature/location.wps", &is_supported);
 	if (retval != SYSTEM_INFO_ERROR_NONE)
+	//LCOV_EXCL_START
 		LOCATIONS_LOGW("system_info_get_platform_bool failed: retval = %d", retval);
 
 	if (is_supported == false)
 		return LOCATIONS_ERROR_NOT_SUPPORTED;
 
 	return LOCATIONS_ERROR_NONE;
+	//LCOV_EXCL_STOP
 }
 
 int __is_location_supported(void)
 {
 	if (__is_gps_supported() == LOCATIONS_ERROR_NOT_SUPPORTED) {
+		//LCOV_EXCL_START
 		if (__is_wps_supported() == LOCATIONS_ERROR_NOT_SUPPORTED)
 			return LOCATIONS_ERROR_NOT_SUPPORTED;
 		else
 			return LOCATIONS_ERROR_NONE;
+		//LCOV_EXCL_STOP
 	}
 
 	return LOCATIONS_ERROR_NONE;
@@ -137,7 +143,7 @@ int __is_batch_supported(void)
 	if (is_supported == false)
 		return LOCATIONS_ERROR_NOT_SUPPORTED;
 
-	return LOCATIONS_ERROR_NONE;
+	return LOCATIONS_ERROR_NONE;	//LCOV_EXCL_LINE
 }
 
 int __set_callback(_location_event_e type, location_manager_h manager, void *callback, void *user_data)

@@ -22,6 +22,7 @@
 #include "location_internal.h"
 
 
+//LCOV_EXCL_START
 static void __free_position_list(gpointer data)
 {
 	if (data == NULL)
@@ -30,6 +31,7 @@ static void __free_position_list(gpointer data)
 	LocationPosition *position = (LocationPosition *) data;
 	location_position_free(position);
 }
+//LCOV_EXCL_STOP
 
 static location_bounds_type_e __convert_bounds_type(LocationBoundaryType type)
 {
@@ -69,23 +71,29 @@ EXPORT_API int location_bounds_create_rect(location_coords_s top_left, location_
 
 	LocationPosition *lt = location_position_new(0, top_left.latitude, top_left.longitude, 0, LOCATION_STATUS_2D_FIX);
 	if (lt == NULL) {
+		//LCOV_EXCL_START
 		LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY(0x%08x) : fail to location_position_new", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
 		return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
+		//LCOV_EXCL_STOP
 	}
 
 	LocationPosition *rb = location_position_new(0, bottom_right.latitude, bottom_right.longitude, 0, LOCATION_STATUS_2D_FIX);
 	if (rb == NULL) {
+		//LCOV_EXCL_START
 		LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY(0x%08x) : fail to location_position_new", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
 		location_position_free(lt);
 		return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
+		//LCOV_EXCL_STOP
 	}
 
 	location_bounds_s *handle = (location_bounds_s *) malloc(sizeof(location_bounds_s));
 	if (handle == NULL) {
+		//LCOV_EXCL_START
 		LOCATIONS_LOGE("OUT_OF_MEMORY(0x%08x)", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
 		location_position_free(rb);
 		location_position_free(lt);
 		return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
+		//LCOV_EXCL_STOP
 	}
 	memset(handle, 0, sizeof(location_bounds_s));
 
@@ -94,9 +102,11 @@ EXPORT_API int location_bounds_create_rect(location_coords_s top_left, location_
 	location_position_free(rb);
 	location_position_free(lt);
 	if (handle->boundary == NULL) {
+		//LCOV_EXCL_START
 		LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY(0x%08x) : fail to location_boundary_new_for_rect", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
 		free(handle);
 		return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
+		//LCOV_EXCL_STOP
 	}
 
 	*bounds = (location_bounds_h) handle;
@@ -113,15 +123,19 @@ EXPORT_API int location_bounds_create_circle(location_coords_s center, double ra
 
 	LocationPosition *ct = location_position_new(0, center.latitude, center.longitude, 0, LOCATION_STATUS_2D_FIX);
 	if (ct == NULL) {
+		//LCOV_EXCL_START
 		LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY(0x%08x) : fail to location_position_new", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
 		return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
+		//LCOV_EXCL_STOP
 	}
 
 	location_bounds_s *handle = (location_bounds_s *) malloc(sizeof(location_bounds_s));
 	if (handle == NULL) {
+		//LCOV_EXCL_START
 		LOCATIONS_LOGE("OUT_OF_MEMORY(0x%08x)", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
 		location_position_free(ct);
 		return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
+		//LCOV_EXCL_STOP
 	}
 	memset(handle, 0, sizeof(location_bounds_s));
 
@@ -129,9 +143,11 @@ EXPORT_API int location_bounds_create_circle(location_coords_s center, double ra
 	handle->boundary = location_boundary_new_for_circle(ct, radius);
 	location_position_free(ct);
 	if (handle->boundary == NULL) {
+		//LCOV_EXCL_START
 		free(handle);
 		LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY(0x%08x) : fail to location_boundary_new_for_circle", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
 		return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
+		//LCOV_EXCL_STOP
 	}
 
 	*bounds = (location_bounds_h) handle;
@@ -170,24 +186,30 @@ EXPORT_API int location_bounds_create_polygon(location_coords_s *coords_list, in
 	}
 
 	if (position_list == NULL) {
+		//LCOV_EXCL_START
 		LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY(0x%08x) : fail to location_position_new", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
 		g_list_free_full(position_list, (GDestroyNotify) __free_position_list);
 		return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
+		//LCOV_EXCL_STOP
 	}
 
 	location_bounds_s *handle = (location_bounds_s *) malloc(sizeof(location_bounds_s));
 	if (handle == NULL) {
+		//LCOV_EXCL_START
 		LOCATIONS_LOGE("OUT_OF_MEMORY(0x%08x)", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
 		return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
+		//LCOV_EXCL_STOP
 	}
 	memset(handle, 0, sizeof(location_bounds_s));
 
 	handle->is_added = FALSE;
 	handle->boundary = location_boundary_new_for_polygon(position_list);
 	if (handle->boundary == NULL) {
+		//LCOV_EXCL_START
 		free(handle);
 		LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY(0x%08x) : fail to location_boundary_new_for_polygon", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
 		return LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY;
+		//LCOV_EXCL_STOP
 	}
 
 	*bounds = (location_bounds_h) handle;
@@ -197,8 +219,10 @@ EXPORT_API int location_bounds_create_polygon(location_coords_s *coords_list, in
 EXPORT_API bool location_bounds_contains_coordinates(location_bounds_h bounds, location_coords_s coords)
 {
 	if (__is_location_supported() == LOCATIONS_ERROR_NOT_SUPPORTED) {
+		//LCOV_EXCL_START
 		set_last_result(LOCATIONS_ERROR_NOT_SUPPORTED);
 		return FALSE;
+		//LCOV_EXCL_STOP
 	}
 
 	if (!bounds) {
@@ -213,9 +237,11 @@ EXPORT_API bool location_bounds_contains_coordinates(location_bounds_h bounds, l
 
 	LocationPosition *pos = location_position_new(0, coords.latitude, coords.longitude, 0, LOCATION_STATUS_2D_FIX);
 	if (pos == NULL) {
+		//LCOV_EXCL_START
 		LOCATIONS_LOGE("LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY(0x%08x) : fail to location_position_new", LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
 		set_last_result(LOCATION_BOUNDS_ERROR_OUT_OF_MEMORY);
 		return FALSE;
+		//LCOV_EXCL_STOP
 	}
 	location_bounds_s *handle = (location_bounds_s *) bounds;
 	gboolean is_inside = location_boundary_if_inside(handle->boundary, pos);

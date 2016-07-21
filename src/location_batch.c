@@ -25,9 +25,11 @@
 /*
 * Internal Implementation
 */
+//LCOV_EXCL_START
 EXPORT_API int location_manager_enable_restriction(bool enable)
 {
 	int ret = LOCATION_ERROR_NONE;
 	ret = location_enable_restriction(enable);
 	return __convert_error_code(ret);
 }
+//LCOV_EXCL_STOP

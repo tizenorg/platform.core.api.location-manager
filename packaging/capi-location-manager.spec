@@ -37,7 +37,12 @@ cp %{SOURCE1001} .
 
 export CFLAGS="$CFLAGS -DTIZEN_DEBUG_ENABLE"
 export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE"
+#export CXXFLAGS="$CXXFLAGS -DTIZEN_DEBUG_ENABLE -fprofile-arcs -ftest-coverage -lgcov"
 export FFLAGS="$FFLAGS -DTIZEN_DEBUG_ENABLE"
+#export LDFLAGS="$FFLAGS -DTIZEN_ENGINEER_MODE -lgcov"
+
+#export CXXFLAGS = “-fprofile-arcs -ftest-coverage”
+#export LDFLAGS = “-lgcov”
 
 MAJORVER=`echo %{version} | awk 'BEGIN {FS="."}{print $1}'`
 cmake . -DCMAKE_INSTALL_PREFIX=%{_prefix} -DLIBDIR=%{_libdir} -DINCLUDEDIR=%{_includedir} \
