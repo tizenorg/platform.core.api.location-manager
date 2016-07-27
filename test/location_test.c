@@ -386,10 +386,6 @@ static void print_location_status()
 
 	location_manager_is_enabled_method(LOCATIONS_METHOD_WPS, &is_enabled);
 	fprintf(stderr, "wps: %d, ", is_enabled);
-
-	/* location_manager_is_test_location_enabled(&is_enabled); */
-	location_manager_is_enabled_method(LOCATIONS_METHOD_MOCK, &is_enabled);
-	fprintf(stderr, "mock: %d\n", is_enabled);
 }
 
 static int enable_method(location_method_e method, bool enable)
@@ -592,8 +588,8 @@ static int location_test()
 		ret = location_manager_enable_mock_location(onoff);
 		fprintf(stderr, "Enabling mock test: ret=%d\n", ret);
 
-		ret = location_manager_create(LOCATIONS_METHOD_MOCK, &manager);
-		fprintf(stderr, "location_manager_create (method: %d): %d\n", LOCATIONS_METHOD_MOCK, ret);
+		ret = location_manager_create(LOCATIONS_METHOD_GPS, &manager);
+		fprintf(stderr, "location_manager_create (method: %d - mock): %d\n", LOCATIONS_METHOD_GPS, ret);
 
 		ret = location_manager_set_mock_location(manager, 10, 20, 0, 40, 50, 100);
 		fprintf(stderr, "location_manager_set_mock_location: %d\n", ret);

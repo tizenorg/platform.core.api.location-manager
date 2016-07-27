@@ -21,7 +21,7 @@
 #include "locations.h"
 #include "location_internal.h"
 
-static location_setting_changed_s g_location_setting[LOCATIONS_METHOD_MOCK + 1];
+static location_setting_changed_s g_location_setting[LOCATIONS_METHOD_WPS + 1];
 
 static location_method_e __convert_location_method_e(LocationMethod method)
 {
@@ -55,9 +55,6 @@ static LocationMethod __convert_LocationMethod(location_method_e method)
 		break;
 	case LOCATIONS_METHOD_WPS:
 		_method = LOCATION_METHOD_WPS;
-		break;
-	case LOCATIONS_METHOD_MOCK:
-		_method = LOCATION_METHOD_MOCK;
 		break;
 	case LOCATIONS_METHOD_NONE:
 	default:
@@ -414,7 +411,7 @@ EXPORT_API int location_manager_is_enabled_method(location_method_e method, bool
 {
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
 
-	if (method < LOCATIONS_METHOD_HYBRID || method > LOCATIONS_METHOD_MOCK) {
+	if (method < LOCATIONS_METHOD_HYBRID || method > LOCATIONS_METHOD_WPS) {
 		LOCATIONS_LOGE("Not supported method [%d]", method);
 		return LOCATIONS_ERROR_INCORRECT_METHOD;
 	}
@@ -440,7 +437,7 @@ EXPORT_API int location_manager_enable_method(const location_method_e method, co
 {
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
 
-	if (method < LOCATIONS_METHOD_HYBRID || method > LOCATIONS_METHOD_MOCK) {
+	if (method < LOCATIONS_METHOD_HYBRID || method > LOCATIONS_METHOD_WPS) {
 		LOCATIONS_LOGE("Not supported method [%d]", method);
 		return LOCATIONS_ERROR_INCORRECT_METHOD;
 	}
@@ -459,9 +456,6 @@ EXPORT_API int location_manager_enable_method(const location_method_e method, co
 		}
 		return LOCATIONS_ERROR_NONE;
 
-	} else if (LOCATIONS_METHOD_MOCK == method) {
-		ret = location_enable_mock(LOCATION_METHOD_MOCK, enable);
-		return __convert_error_code(ret);
 	} else  {
 		if ((LOCATIONS_METHOD_GPS == method) && (__is_gps_supported() == LOCATIONS_ERROR_NOT_SUPPORTED)) {
 			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x)", LOCATIONS_ERROR_NOT_SUPPORTED);
@@ -492,11 +486,6 @@ EXPORT_API int location_manager_create(location_method_e method, location_manage
 		}
 	} else if (method == LOCATIONS_METHOD_WPS) {
 		if (__is_wps_supported() == LOCATIONS_ERROR_NOT_SUPPORTED) {
-			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x) : fail to location feature", LOCATIONS_ERROR_NOT_SUPPORTED);
-			return LOCATIONS_ERROR_NOT_SUPPORTED;
-		}
-	} else if (method == LOCATIONS_METHOD_MOCK) {
-		if (__is_gps_supported() == LOCATIONS_ERROR_NOT_SUPPORTED) {
 			LOCATIONS_LOGE("LOCATIONS_ERROR_NOT_SUPPORTED(0x%08x) : fail to location feature", LOCATIONS_ERROR_NOT_SUPPORTED);
 			return LOCATIONS_ERROR_NOT_SUPPORTED;
 		}
@@ -602,7 +591,7 @@ EXPORT_API int location_manager_start(location_manager_h manager)
 	if (!handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED])
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED] = g_signal_connect(handle->object, "service-updated", G_CALLBACK(__cb_service_updated), handle);
 
-	if (handle->method >= LOCATIONS_METHOD_HYBRID && handle->method <= LOCATIONS_METHOD_MOCK) {
+	if (handle->method >= LOCATIONS_METHOD_HYBRID && handle->method <= LOCATIONS_METHOD_WPS) {
 		if (!handle->sig_id[_LOCATION_SIGNAL_ZONE_IN])
 			handle->sig_id[_LOCATION_SIGNAL_ZONE_IN] = g_signal_connect(handle->object, "zone-in", G_CALLBACK(__cb_zone_in), handle);
 
@@ -665,7 +654,7 @@ EXPORT_API int location_manager_stop(location_manager_h manager)
 		handle->sig_id[_LOCATION_SIGNAL_SERVICE_UPDATED] = 0;
 	}
 
-	if (handle->method >= LOCATIONS_METHOD_HYBRID && handle->method <= LOCATIONS_METHOD_MOCK) {
+	if (handle->method >= LOCATIONS_METHOD_HYBRID && handle->method <= LOCATIONS_METHOD_WPS) {
 		if (handle->sig_id[_LOCATION_SIGNAL_ZONE_IN]) {
 			g_signal_handler_disconnect(handle->object, handle->sig_id[_LOCATION_SIGNAL_ZONE_IN]);
 			handle->sig_id[_LOCATION_SIGNAL_ZONE_IN] = 0;
@@ -760,9 +749,6 @@ EXPORT_API int location_manager_get_method(location_manager_h manager, location_
 		break;
 	case LOCATION_METHOD_WPS:
 		*method = LOCATIONS_METHOD_WPS;
-		break;
-	case LOCATION_METHOD_MOCK:
-		*method = LOCATIONS_METHOD_MOCK;
 		break;
 	default: {
 		LOCATIONS_LOGE("[LOCATIONS_ERROR_INVALID_PARAMETER] method : %d ", method);
@@ -1557,7 +1543,7 @@ EXPORT_API int location_manager_enable_mock_location(const bool enable)
 	LOCATIONS_NOT_SUPPORTED_CHECK(__is_location_supported());
 	int ret = LOCATION_ERROR_NONE;
 
-	ret = location_enable_mock(LOCATION_METHOD_MOCK, enable);
+	ret = location_enable_mock(enable);
 	return __convert_error_code(ret);
 }
 
@@ -1578,7 +1564,7 @@ EXPORT_API int location_manager_set_mock_location(location_manager_h manager, co
 	LocationVelocity *vel = NULL;
 	LocationAccuracy *acc = NULL;
 
-	ret = location_is_enabled_method(LOCATION_METHOD_MOCK, &enabled);
+	ret = location_is_enabled_method(_TMP_METHOD_MOCK, &enabled);
 	LOCATIONS_LOGD("enable: %d, ret: %d", enabled, ret);
 	if (ret == LOCATIONS_ERROR_NONE) {
 		if (enabled == 0)
@@ -1594,7 +1580,7 @@ EXPORT_API int location_manager_set_mock_location(location_manager_h manager, co
 	}
 	vel = location_velocity_new(0, speed, direction, 0);
 	if (!vel) {
-		LOCATIONS_LOGE("Failed to create volocity");
+		LOCATIONS_LOGE("Failed to create velocity");
 		location_position_free(pos);
 		return LOCATIONS_ERROR_OUT_OF_MEMORY;
 	}
@@ -1626,7 +1612,7 @@ EXPORT_API int location_manager_clear_mock_location(location_manager_h manager)
 	int ret = LOCATION_ERROR_NONE;
 	int enabled;
 
-	ret = location_is_enabled_method(LOCATION_METHOD_MOCK, &enabled);
+	ret = location_is_enabled_method(_TMP_METHOD_MOCK, &enabled);
 	if (ret == LOCATIONS_ERROR_NONE) {
 		if (enabled == 0)
 			return __convert_error_code(LOCATION_ERROR_SETTING_OFF);

@@ -44,7 +44,7 @@ typedef enum {
 	LOCATIONS_ERROR_INCORRECT_METHOD			= TIZEN_ERROR_LOCATION_MANAGER | 0x01,	/**< Location manager contains incorrect method for a given call */
 	LOCATIONS_ERROR_NETWORK_FAILED				= TIZEN_ERROR_LOCATION_MANAGER | 0x02,	/**< Network unavailable */
 	LOCATIONS_ERROR_SERVICE_NOT_AVAILABLE		= TIZEN_ERROR_LOCATION_MANAGER | 0x03,	/**< Location service is not available */
-	LOCATIONS_ERROR_GPS_SETTING_OFF				= TIZEN_ERROR_LOCATION_MANAGER | 0x04,	/**< Setting for GPS, WPS, or MOCK is turned off */
+	LOCATIONS_ERROR_GPS_SETTING_OFF				= TIZEN_ERROR_LOCATION_MANAGER | 0x04,	/**< Setting for GPS or WPS is turned off */
 	LOCATIONS_ERROR_SECURITY_RESTRICTED			= TIZEN_ERROR_LOCATION_MANAGER | 0x05,	/**< Restricted by security system policy */
 	LOCATIONS_ERROR_SETTING_OFF					= LOCATIONS_ERROR_GPS_SETTING_OFF,		/**< Setting for GPS, WPS, or MOCK is turned off (Since 3.0) */
 } location_error_e;
@@ -59,7 +59,6 @@ typedef enum {
 	LOCATIONS_METHOD_HYBRID,	/**< This method selects the best method available at the moment */
 	LOCATIONS_METHOD_GPS,		/**< This method uses Global Positioning System */
 	LOCATIONS_METHOD_WPS,		/**< This method uses WiFi Positioning System */
-	LOCATIONS_METHOD_MOCK,		/**< This method uses mock location for testing (Since 3.0)*/
 } location_method_e;
 
 /**
